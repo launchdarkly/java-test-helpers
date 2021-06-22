@@ -1,56 +1,54 @@
 package com.launchdarkly.testhelpers.httptest;
 
-import javax.servlet.http.HttpServletResponse;
-
 /**
  * An abstraction used by {@link Handler} implementations to hide the details of
  * the underlying HTTP server framework.
  */
-public final class RequestContext {
-  private final RequestInfo request;
-  private final HttpServletResponse response;
-  private final String[] pathParams;
-  
-  /**
-   * Constructs an instance.
-   * 
-   * @param request the HTTP request object
-   * @param response the HTTP response object
-   * @param pathParams optional path parameters
-   */
-  public RequestContext(RequestInfo request, HttpServletResponse response, String[] pathParams) {
-    this.request = request;
-    this.response = response;
-    this.pathParams = pathParams;
-  }
-
-  /**
-   * Constructs an instance.
-   * 
-   * @param request the HTTP request object
-   * @param response the HTTP response object
-   */
-  public RequestContext(RequestInfo request, HttpServletResponse response) {
-    this(request, response, null);
-  }
-
+public interface RequestContext {
   /**
    * Returns the {@link RequestInfo}.
    * 
    * @return a {@link RequestInfo}
    */
-  public RequestInfo getRequest() {
-    return request;
-  }
+  RequestInfo getRequest();
   
   /**
-   * Returns the {@link HttpServletResponse}.
+   * Sets the response status.
    * 
-   * @return an {@link HttpServletResponse}
+   * @param status the status code
    */
-  public HttpServletResponse getResponse() {
-    return response;
-  }
+  void setStatus(int status);
+  
+  /**
+   * Sets a response header.
+   * 
+   * @param name the header name
+   * @param value the header value
+   */
+  void setHeader(String name, String value);
+
+  /**
+   * Adds a response header, without overwriting any previous values.
+   * 
+   * @param name the header name
+   * @param value the header value
+   */
+  void addHeader(String name, String value);
+
+  /**
+   * Turns on chunked encoding.
+   * <p>
+   * It's only valid to call this when {@link #write(byte[])} has not yet been called. After
+   * {@link #write(byte[])} is called, the behavior of {@link #setChunked()} is undefined.
+   */
+  void setChunked();
+  
+  /**
+   * Writes data to the output stream.
+   * 
+   * @param data the data to write; null or zero-length data means to only flush the stream
+   */
+  void write(byte[] data);
   
   /**
    * Returns a path parameter, if any path parameters were captured.
@@ -66,7 +64,14 @@ public final class RequestContext {
    * @return the path parameter string; null if there were no path parameters, or if the index
    *   is out of range
    */
-  public String getPathParam(int i) {
-    return pathParams != null && i >= 0 && i < pathParams.length ? pathParams[i] : null;
-  }
+  String getPathParam(int i);
+  
+  /**
+   * Returns a copy of this context with path parameter information added.
+   *  
+   * @param pathParams a sequence of positional parameters
+   * @return a transformed context
+   * @see #getPathParam(int)
+   */
+  RequestContext withPathParams(Iterable<String> pathParams);
 }

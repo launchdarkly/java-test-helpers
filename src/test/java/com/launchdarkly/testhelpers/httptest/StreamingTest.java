@@ -94,21 +94,22 @@ public class StreamingTest {
         );
     
     try (HttpServer server = HttpServer.start(handler)) {
-      Response resp = simpleGet(server.getUri());
-      assertThat(resp.code(), equalTo(200));
-      assertThat(resp.header("Content-Type"), equalTo(expectedContentType));
-      
-      InputStream stream = resp.body().byteStream();
-      
-      for (int i = 0; i < expectedChunks.size(); i++) {
-        didWriteChunk[i].acquire();
+      try (Response resp = simpleGet(server.getUri())) {
+        assertThat(resp.code(), equalTo(200));
+        assertThat(resp.header("Content-Type"), equalTo(expectedContentType));
         
-        byte[] buf = new byte[100];
-        int n = stream.read(buf);
-        String s = new String(buf, 0, n);
-        assertThat(s, equalTo(expectedChunks.get(i)));
+        InputStream stream = resp.body().byteStream();
         
-        didReadChunk[i].release();
+        for (int i = 0; i < expectedChunks.size(); i++) {
+          didWriteChunk[i].acquire();
+          
+          byte[] buf = new byte[100];
+          int n = stream.read(buf);
+          String s = new String(buf, 0, n);
+          assertThat(s, equalTo(expectedChunks.get(i)));
+          
+          didReadChunk[i].release();
+        }
       }
     }
   }

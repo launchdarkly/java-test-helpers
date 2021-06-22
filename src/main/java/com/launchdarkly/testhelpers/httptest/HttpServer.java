@@ -1,24 +1,11 @@
 package com.launchdarkly.testhelpers.httptest;
 
-import org.eclipse.jetty.server.Connector;
-import org.eclipse.jetty.server.HttpConfiguration;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.SecureRequestCustomizer;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.handler.AbstractHandler;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
+import com.launchdarkly.testhelpers.httptest.impl.JettyHttpServerDelegate;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
-import java.security.KeyStore;
-import java.security.cert.Certificate;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * A simplified wrapper for an embedded test HTTP server.
@@ -26,47 +13,29 @@ import javax.servlet.http.HttpServletResponse;
  * See {@link com.launchdarkly.testhelpers.httptest} for more details and examples.
  */
 public final class HttpServer implements Closeable {
-  private final Server server;
-  private final RequestRecorder recorder;
+  private final Delegate delegate;
   private final int port;
   private final URI uri;
-  private volatile boolean recording;
+  private final RequestRecorder recorder;
   
-  private HttpServer(Server server, Handler handler, boolean secure) {
-    this.server = server;
-    this.recorder = new RequestRecorder();
-    this.recording = true;
-    
-    server.setHandler(new AbstractHandler() {
-      @Override
-      public void handle(String target, Request baseRequest, HttpServletRequest req, HttpServletResponse resp)
-          throws IOException, ServletException {
-        baseRequest.setHandled(true);
-        RequestContext ctx = new RequestContext(new RequestInfo(req), resp);
-        if (recording) {
-          recorder.apply(ctx);
-        }
-        try {
-          handler.apply(ctx);
-        } catch (IllegalArgumentException e) {
-          resp.setStatus(400);
-        } catch (Exception e) {
-          resp.setStatus(500);
-        }
-      }
-    });
-    
-    server.setStopTimeout(100); // without this, Jetty does not interrupt worker threads on shutdown    
-
-    try {
-      server.start();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-    
-    this.port = ((ServerConnector)server.getConnectors()[0]).getLocalPort();
-    this.uri = URI.create(String.format("%s://localhost:%d/",
-        secure ? "https" : "http", this.port));
+  /**
+   * An abstraction for the part of the server implementation that could vary by platform.
+   */
+  public interface Delegate extends Closeable {
+    /**
+     * Starts the server and returns the port it's listening on.
+     * 
+     * @return the port
+     * @throws IOException if starting the server fails
+     */
+    int start() throws IOException;
+  }
+  
+  private HttpServer(Delegate delegate, int port, URI uri, RequestRecorder recorder) {
+    this.delegate = delegate;
+    this.port = port;
+    this.uri = uri;
+    this.recorder = recorder;
   }
   
   /**
@@ -80,7 +49,7 @@ public final class HttpServer implements Closeable {
    * @return the started server instance
    */
   public static HttpServer start(int port, Handler handler) {
-    return new HttpServer(new Server(port), handler, false);
+    return startInternal(port, handler, null);
   }
 
   /**
@@ -99,7 +68,7 @@ public final class HttpServer implements Closeable {
   /**
    * Starts a new HTTPS test server on a specific port.
    * 
-   * @param certData certificate and key data; to use a self-signed certificate, call
+   * @param tlsConfig certificate and key data; to use a self-signed certificate, call
    *   {@link ServerTLSConfiguration#makeSelfSignedCertificate()} 
    * @param port the port to listen on
    * @param handler An object or lambda that will handle all requests to this server. Use
@@ -108,8 +77,8 @@ public final class HttpServer implements Closeable {
    *   {@link HandlerSwitcher}.
    * @return the started server instance
    */
-  public static HttpServer startSecure(ServerTLSConfiguration certData, int port, Handler handler) {
-    return new HttpServer(makeSecureJettyServer(certData, port), handler, true);
+  public static HttpServer startSecure(ServerTLSConfiguration tlsConfig, int port, Handler handler) {
+    return startInternal(port, handler, tlsConfig);
   }
   
   /**
@@ -127,34 +96,38 @@ public final class HttpServer implements Closeable {
     return startSecure(certData, 0, handler);
   }
   
-  private static Server makeSecureJettyServer(ServerTLSConfiguration certData, int port) {
-    Server server = new Server(port);
+  private static HttpServer startInternal(int port, Handler handler, ServerTLSConfiguration tlsConfig) {
+    RequestRecorder recorder = new RequestRecorder();
+    Handler rootHandler = ctx -> {
+      recorder.apply(ctx);
+      try {
+        handler.apply(ctx);
+      } catch (IllegalArgumentException e) {
+        ctx.setStatus(400);
+      } catch (Exception e) {
+        ctx.setStatus(500);
+      }
+    };
     
-    HttpConfiguration httpsConfig = new HttpConfiguration();
-    httpsConfig.addCustomizer(new SecureRequestCustomizer());
-    
-    SslContextFactory sslContextFactory = new SslContextFactory.Server();
-    sslContextFactory.addExcludeProtocols("TLSv1.3");
+    Delegate delegate = new JettyHttpServerDelegate(port, rootHandler, tlsConfig);
+
+    int realPort;
     try {
-      KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-      ks.load(null);
-      ks.setCertificateEntry("localhost", certData.getCertificate());
-      ks.setEntry("localhost", new KeyStore.PrivateKeyEntry(certData.getPrivateKey(), new Certificate[] { certData.getCertificate() }),
-          new KeyStore.PasswordProtection("secret".toCharArray()));
-      sslContextFactory.setKeyStore(ks);
-    } catch (Exception e) {
+      realPort = delegate.start();
+    } catch (IOException e) {
+      try {
+        delegate.close();
+      } catch (Exception ignore) {}
       throw new RuntimeException(e);
     }
-    sslContextFactory.setKeyManagerPassword("secret");
-    sslContextFactory.setKeyStorePassword("secret");
-    sslContextFactory.setTrustAll(true);
-    sslContextFactory.setValidateCerts(false);
     
-    ServerConnector connector = new ServerConnector(server, sslContextFactory);
-    connector.setPort(port);
-    server.setConnectors(new Connector[] { connector });
-    
-    return server;
+    return new HttpServer(
+        delegate,
+        realPort,
+        URI.create(String.format("%s://localhost:%d/",
+            tlsConfig == null ? "http" : "https", realPort)),
+        recorder
+        );
   }
   
   /**
@@ -189,8 +162,8 @@ public final class HttpServer implements Closeable {
   }
   
   /**
-   * Returns the {@link RequestRecorder} that receives all requests to this server whenever
-   * {@link #isRecording()} is true.
+   * Returns the {@link RequestRecorder} that receives all requests to this server,
+   * unless you disable it with {@link RequestRecorder#setEnabled(boolean)}.
    * 
    * @return the recorder
    */
@@ -199,30 +172,12 @@ public final class HttpServer implements Closeable {
   }
   
   /**
-   * Returns true if the server is recording requests. This is true by default.
-   * 
-   * @return true if recording requests
-   */
-  public boolean isRecording() {
-    return recording;
-  }
-  
-  /**
-   * Sets whether to record requests. This is true by default.
-   * 
-   * @param recording true to record requests
-   */
-  public void setRecording(boolean recording) {
-    this.recording = recording;
-  }
-
-  /**
    * Shuts down the server.
    */
   @Override
-  public void close() throws IOException {
+  public void close() {
     try {
-      server.stop();
+      delegate.close();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

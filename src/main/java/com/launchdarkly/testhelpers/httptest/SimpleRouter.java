@@ -1,5 +1,7 @@
 package com.launchdarkly.testhelpers.httptest;
 
+import com.google.common.collect.ImmutableList;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -36,19 +38,18 @@ public final class SimpleRouter implements Handler {
         if (r.method != null && !r.method.equalsIgnoreCase(context.getRequest().getMethod())) {
           continue;
         }
-        String[] params = null;
         if (m.groupCount() > 0) {
-          params = new String[m.groupCount()];
-          for (int i = 0; i < m.groupCount(); i++) {
-            params[i] = m.group(i + 1);
+          ImmutableList.Builder<String> params = ImmutableList.builder();
+          for (int i = 1; i <= m.groupCount(); i++) {
+            params.add(m.group(i));
           }
-          context = new RequestContext(context.getRequest(), context.getResponse(), params);
+          context = context.withPathParams(params.build());
         }
         r.handler.apply(context);
         return;
       }
     }
-    context.getResponse().setStatus(matchedPath ? 405 : 404);
+    context.setStatus(matchedPath ? 405 : 404);
   }
   
   /**

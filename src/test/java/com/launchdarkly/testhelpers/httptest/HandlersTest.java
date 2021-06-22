@@ -15,7 +15,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 
-import okhttp3.Call;
 import okhttp3.Request;
 import okhttp3.Response;
 
@@ -24,19 +23,21 @@ public class HandlersTest {
   @Test
   public void status() throws Exception {
     try (HttpServer server = HttpServer.start(Handlers.status(419))) {
-      Response resp = simpleGet(server.getUri());
-      assertThat(resp.code(), equalTo(419));
-      assertThat(resp.header("Content-Type"), nullValue());
-      assertThat(resp.body().string(), equalTo(""));
+      try (Response resp = simpleGet(server.getUri())) {
+        assertThat(resp.code(), equalTo(419));
+        assertThat(resp.header("Content-Type"), nullValue());
+        assertThat(resp.body().string(), equalTo(""));
+      }
     }
   }
   
   @Test
   public void header() throws Exception {
     try (HttpServer server = HttpServer.start(Handlers.header("header-name", "value"))) {
-      Response resp = simpleGet(server.getUri());
-      assertThat(resp.code(), equalTo(200));
-      assertThat(resp.header("Header-Name"), equalTo("value"));
+      try (Response resp = simpleGet(server.getUri())) {
+        assertThat(resp.code(), equalTo(200));
+        assertThat(resp.header("Header-Name"), equalTo("value"));
+      }
     }
   }
   
@@ -46,9 +47,10 @@ public class HandlersTest {
         Handlers.header("header-name", "old-value"),
         Handlers.header("header-name", "new-value")
         ))) {
-      Response resp = simpleGet(server.getUri());
-      assertThat(resp.code(), equalTo(200));
-      assertThat(resp.headers("Header-Name"), equalTo(ImmutableList.of("new-value")));
+      try (Response resp = simpleGet(server.getUri())) {
+        assertThat(resp.code(), equalTo(200));
+        assertThat(resp.headers("Header-Name"), equalTo(ImmutableList.of("new-value")));
+      }
     }
   }
   
@@ -58,9 +60,10 @@ public class HandlersTest {
         Handlers.addHeader("header-name", "old-value"),
         Handlers.addHeader("header-name", "new-value")
         ))) {
-      Response resp = simpleGet(server.getUri());
-      assertThat(resp.code(), equalTo(200));
-      assertThat(resp.headers("Header-Name"), equalTo(ImmutableList.of("old-value", "new-value")));
+      try (Response resp = simpleGet(server.getUri())) {
+        assertThat(resp.code(), equalTo(200));
+        assertThat(resp.headers("Header-Name"), equalTo(ImmutableList.of("old-value", "new-value")));
+      }
     }
   }
   
@@ -68,9 +71,10 @@ public class HandlersTest {
   public void body() throws Exception {
     byte[] data = new byte[] { 1, 2, 3 };
     try (HttpServer server = HttpServer.start(Handlers.body("application/weird", data))) {
-      Response resp = simpleGet(server.getUri());
-      assertThat(resp.code(), equalTo(200));
-      assertThat(resp.body().bytes(), equalTo(data));
+      try (Response resp = simpleGet(server.getUri())) {
+        assertThat(resp.code(), equalTo(200));
+        assertThat(resp.body().bytes(), equalTo(data));
+      }
     }
   }
   
@@ -78,10 +82,11 @@ public class HandlersTest {
   public void bodyStringWithNoCharset() throws Exception {
     String body = "hello";
     try (HttpServer server = HttpServer.start(Handlers.bodyString("text/weird", body))) {
-      Response resp = simpleGet(server.getUri());
-      assertThat(resp.code(), equalTo(200));
-      assertThat(resp.header("content-type"), equalTo("text/weird"));
-      assertThat(resp.body().string(), equalTo(body));
+      try (Response resp = simpleGet(server.getUri())) {
+        assertThat(resp.code(), equalTo(200));
+        assertThat(resp.header("content-type"), equalTo("text/weird"));
+        assertThat(resp.body().string(), equalTo(body));
+      }
     }
   }
   
@@ -89,10 +94,11 @@ public class HandlersTest {
   public void bodyStringWithCharset() throws Exception {
     String body = "hello";
     try (HttpServer server = HttpServer.start(Handlers.bodyString("text/weird", body, Charset.forName("UTF-8")))) {
-      Response resp = simpleGet(server.getUri());
-      assertThat(resp.code(), equalTo(200));
-      assertThat(resp.header("content-type"), equalTo("text/weird;charset=utf-8"));
-      assertThat(resp.body().string(), equalTo(body));
+      try (Response resp = simpleGet(server.getUri())) {
+        assertThat(resp.code(), equalTo(200));
+        assertThat(resp.header("content-type"), equalTo("text/weird;charset=utf-8"));
+        assertThat(resp.body().string(), equalTo(body));
+      }
     }
   }
 
@@ -100,10 +106,11 @@ public class HandlersTest {
   public void bodyJsonWithoutCharset() throws Exception {
     String body = "true";
     try (HttpServer server = HttpServer.start(Handlers.bodyJson(body))) {
-      Response resp = client.newCall(new Request.Builder().url(server.getUrl()).build()).execute();
-      assertThat(resp.code(), equalTo(200));
-      assertThat(resp.header("content-type"), equalTo("application/json"));
-      assertThat(resp.body().string(), equalTo(body));
+      try (Response resp = client.newCall(new Request.Builder().url(server.getUrl()).build()).execute()) {
+        assertThat(resp.code(), equalTo(200));
+        assertThat(resp.header("content-type"), equalTo("application/json"));
+        assertThat(resp.body().string(), equalTo(body));
+      }
     }
   }
 
@@ -111,10 +118,11 @@ public class HandlersTest {
   public void bodyJsonWithCharset() throws Exception {
     String body = "true";
     try (HttpServer server = HttpServer.start(Handlers.bodyJson(body, Charset.forName("UTF-8")))) {
-      Response resp = simpleGet(server.getUri());
-      assertThat(resp.code(), equalTo(200));
-      assertThat(resp.header("content-type"), equalTo("application/json;charset=utf-8"));
-      assertThat(resp.body().string(), equalTo(body));
+      try (Response resp = simpleGet(server.getUri())) {
+        assertThat(resp.code(), equalTo(200));
+        assertThat(resp.header("content-type"), equalTo("application/json;charset=utf-8"));
+        assertThat(resp.body().string(), equalTo(body));
+      }
     }
   }
   
@@ -127,12 +135,13 @@ public class HandlersTest {
         Handlers.bodyString("text/plain", "hello")
         );
     try (HttpServer server = HttpServer.start(handler)) {
-      Response resp = simpleGet(server.getUri());
-      assertThat(resp.code(), equalTo(201));
-      assertThat(resp.header("name1"), equalTo("value1"));
-      assertThat(resp.header("name2"), equalTo("value2"));
-      assertThat(resp.header("content-type"), equalTo("text/plain"));
-      assertThat(resp.body().string(), equalTo("hello"));
+      try (Response resp = simpleGet(server.getUri())) {
+        assertThat(resp.code(), equalTo(201));
+        assertThat(resp.header("name1"), equalTo("value1"));
+        assertThat(resp.header("name2"), equalTo("value2"));
+        assertThat(resp.header("content-type"), equalTo("text/plain"));
+        assertThat(resp.body().string(), equalTo("hello"));
+      }
     }
   }
   
@@ -154,24 +163,17 @@ public class HandlersTest {
         signaled.set(true);
         signal.release();
       }).start();
-      Response resp = simpleGet(server.getUri());
-      assertThat(signaled.get(), equalTo(true));
-      assertThat(resp.code(), equalTo(200));
+      try (Response resp = simpleGet(server.getUri())) {
+        assertThat(signaled.get(), equalTo(true));
+        assertThat(resp.code(), equalTo(200));
+      }
     }
   }
   
   @Test(expected=IOException.class)
   public void malformedResponse() throws Exception {
     try (HttpServer server = HttpServer.start(Handlers.malformedResponse())) {
-//      while (true) {Thread.sleep(100);}
-      try {
-        //client.newCall(new Request.Builder().url(server.getUrl()).build()).execute();
-        Call c = client.newCall(new Request.Builder().url(server.getUrl()).build());
-        c.execute();
-      } catch (Exception e) {
-        System.out.println("*** yo");
-        throw e;
-      }
+      client.newCall(new Request.Builder().url(server.getUrl()).build()).execute();
     }
   }
 }

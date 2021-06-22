@@ -5,10 +5,11 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * An object that records all requests.
- *
+ * <p>
  * Normally you won't need to use this class directly, because {@link HttpServer} has a
  * built-in instance that captures all requests. You can use it if you need to capture
  * only a subset of requests.
@@ -20,10 +21,13 @@ public final class RequestRecorder implements Handler {
   public static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(5);
   
   private final BlockingQueue<RequestInfo> requests = new LinkedBlockingQueue<>();
+  private final AtomicBoolean enabled = new AtomicBoolean(true);
   
   @Override
   public void apply(RequestContext context) {
-    requests.add(context.getRequest());
+    if (enabled.get()) {
+      requests.add(context.getRequest());
+    }
   }
 
   /**
@@ -35,6 +39,24 @@ public final class RequestRecorder implements Handler {
     return requests.size();
   }
 
+  /**
+   * Returns true if the recorder is capturing requests. This is true by default.
+   * 
+   * @return true if enabled
+   */
+  public boolean isEnabled() {
+    return enabled.get();
+  }
+  
+  /**
+   * Sets whether the recorder should capture requests. This is true by default.
+   * 
+   * @param enabled true to enable the recorder, false to disable
+   */
+  public void setEnabled(boolean enabled) {
+    this.enabled.set(enabled);
+  }
+  
   /**
    * Consumes and returns the first request in the queue, blocking until one is available,
    * using {@link #DEFAULT_TIMEOUT}.

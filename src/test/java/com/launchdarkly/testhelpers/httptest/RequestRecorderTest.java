@@ -7,6 +7,7 @@ import org.junit.Test;
 import java.net.URI;
 
 import static com.launchdarkly.testhelpers.httptest.TestUtil.client;
+import static com.launchdarkly.testhelpers.httptest.TestUtil.simpleGet;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
@@ -86,6 +87,30 @@ public class RequestRecorderTest {
       assertThat(received.getQuery(), nullValue());
       assertThat(received.getHeader("Content-Type"), startsWith("text/plain"));
       assertThat(received.getBody(), equalTo("hello"));
+    }
+  }
+  
+  @Test
+  public void canDisableRecorder() throws Exception {
+    try (HttpServer server = HttpServer.start(Handlers.status(200))) {
+      simpleGet(server.getUri().resolve("/path1"));
+      
+      server.getRecorder().setEnabled(false);
+      
+      simpleGet(server.getUri().resolve("/path2"));
+      simpleGet(server.getUri().resolve("/path3"));
+      
+      server.getRecorder().setEnabled(true);
+      
+      simpleGet(server.getUri().resolve("/path4"));
+      
+      RequestInfo received1 = server.getRecorder().requireRequest();
+      assertThat(received1.getPath(), equalTo("/path1"));
+
+      RequestInfo received2 = server.getRecorder().requireRequest();
+      assertThat(received2.getPath(), equalTo("/path4"));
+      
+      assertThat(server.getRecorder().count(), equalTo(0));
     }
   }
 }

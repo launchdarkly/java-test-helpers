@@ -3,8 +3,6 @@ package com.launchdarkly.testhelpers.httptest;
 import org.eclipse.jetty.server.HttpConnection;
 import org.eclipse.jetty.util.Callback;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.net.ProtocolException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -39,7 +37,7 @@ public abstract class Handlers {
    * @return a {@link Handler}
    */
   public static Handler status(int status) {
-    return ctx -> ctx.getResponse().setStatus(status);
+    return ctx -> ctx.setStatus(status);
   }
   
   /**
@@ -50,7 +48,7 @@ public abstract class Handlers {
    * @return a {@link Handler}
    */
   public static Handler header(String name, String value) {
-    return ctx -> ctx.getResponse().setHeader(name, value);
+    return ctx -> ctx.setHeader(name, value);
   }
   
   /**
@@ -61,7 +59,7 @@ public abstract class Handlers {
    * @return a {@link Handler}
    */
   public static Handler addHeader(String name, String value) {
-    return ctx -> ctx.getResponse().addHeader(name, value);
+    return ctx -> ctx.addHeader(name, value);
   }
 
   /**
@@ -73,14 +71,10 @@ public abstract class Handlers {
    */
   public static Handler body(String contentType, byte[] body) {
     return ctx -> {
-      ctx.getResponse().setContentType(contentType);
-      ctx.getResponse().setContentLength(body == null ? 0 : body.length);
+      ctx.setHeader("Content-Type", contentType);
+      ctx.setHeader("Content-Length", String.valueOf(body == null ? 0 : body.length));
       if (body != null) {
-        try {
-          ctx.getResponse().getOutputStream().write(body);
-        } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
+        ctx.write(body);
       }
     };
   }
@@ -155,14 +149,10 @@ public abstract class Handlers {
    */
   public static Handler startChunks(String contentType, Charset encoding) {
     return ctx -> {
-      ctx.getResponse().setContentType(encoding == null ? contentType :
+      ctx.setHeader("Content-Type", encoding == null ? contentType :
         (contentType + ";charset=" + encoding.name().toLowerCase()));
-      ctx.getResponse().setHeader("Transfer-Encoding", "chunked");
-      try {
-        ctx.getResponse().flushBuffer();
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
+      ctx.setChunked();
+      ctx.write(null);
     };
   }
   
@@ -173,16 +163,7 @@ public abstract class Handlers {
    * @return a {@link Handler}
    */
   public static Handler writeChunk(byte[] data) {
-    return ctx -> {
-      try {
-        OutputStream os = ctx.getResponse().getOutputStream();
-        os.write(data);
-        os.flush();
-        ctx.getResponse().flushBuffer();
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    };
+    return ctx -> ctx.write(data);
   }
   
   /**
