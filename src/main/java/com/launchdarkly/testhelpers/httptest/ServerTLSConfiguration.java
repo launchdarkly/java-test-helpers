@@ -59,7 +59,7 @@ public final class ServerTLSConfiguration {
       .serialNumber(BigInteger.ONE)
       .certificateAuthority(1)
       .commonName(hostname)
-      .addSubjectAlternativeName(hostname)
+      .addSubjectAlternativeName("localhost")
       .build();
 
     HandshakeCertificates hc = new HandshakeCertificates.Builder()
