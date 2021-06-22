@@ -100,6 +100,7 @@ public final class JettyHttpServerDelegate implements HttpServer.Delegate {
     sslContextFactory.setValidateCerts(false);
     
     ServerConnector connector = new ServerConnector(server, sslContextFactory);
+    connector.setHost("localhost");
     connector.setPort(port);
     server.setConnectors(new Connector[] { connector });
     
