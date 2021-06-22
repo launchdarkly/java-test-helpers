@@ -5,7 +5,10 @@ import org.junit.Test;
 import static com.launchdarkly.testhelpers.httptest.TestUtil.simpleGet;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.startsWith;
 
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import okhttp3.Response;
 
 @SuppressWarnings("javadoc")
@@ -37,6 +40,21 @@ public class HttpServerTest {
         assertThat(resp1.code(), equalTo(200));
         assertThat(resp2.code(), equalTo(419));
       }
+    }
+  }
+  
+  @Test
+  public void secureServerWithSelfSignedCert() throws Exception {
+    ServerTLSConfiguration certData = ServerTLSConfiguration.makeSelfSignedCertificate();
+    OkHttpClient client = new OkHttpClient.Builder()
+        .sslSocketFactory(certData.getSocketFactory(), certData.getTrustManager())
+        .build();
+
+    try (HttpServer server = HttpServer.startSecure(certData, 443, Handlers.status(419))) {
+      assertThat(server.getUri().toString(), startsWith("https:"));
+      
+      Response resp = client.newCall(new Request.Builder().url(server.getUrl()).build()).execute();
+      assertThat(resp.code(), equalTo(419));
     }
   }
 }

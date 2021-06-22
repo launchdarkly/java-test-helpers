@@ -1,14 +1,20 @@
 package com.launchdarkly.testhelpers.httptest;
 
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -26,8 +32,8 @@ public final class HttpServer implements Closeable {
   private final URI uri;
   private volatile boolean recording;
   
-  private HttpServer(int port, Handler handler) {
-    this.server = new Server(port);
+  private HttpServer(Server server, Handler handler, boolean secure) {
+    this.server = server;
     this.recorder = new RequestRecorder();
     this.recording = true;
     
@@ -50,26 +56,23 @@ public final class HttpServer implements Closeable {
       }
     });
     
-    server.setStopTimeout(100); // without this, Jetty does not interrupt worker threads on shutdown
-    
+    server.setStopTimeout(100); // without this, Jetty does not interrupt worker threads on shutdown    
+
     try {
       server.start();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
     
-    if (port == 0) {
-      this.port = ((ServerConnector)server.getConnectors()[0]).getLocalPort();
-    } else {
-      this.port = port;
-    }
-    this.uri = URI.create("http://localhost:" + this.port + "/");
+    this.port = ((ServerConnector)server.getConnectors()[0]).getLocalPort();
+    this.uri = URI.create(String.format("%s://localhost:%d/",
+        secure ? "https" : "http", this.port));
   }
   
   /**
    * Starts a new test server on a specific port.
    * 
-   * @param port The port to listen on
+   * @param port the port to listen on
    * @param handler An object or lambda that will handle all requests to this server. Use
    *   the factory methods in {@link Handlers} for standard handlers. If you will need
    *   to change the behavior of the handler during the lifetime of the server, use
@@ -77,7 +80,7 @@ public final class HttpServer implements Closeable {
    * @return the started server instance
    */
   public static HttpServer start(int port, Handler handler) {
-    return new HttpServer(port, handler);
+    return new HttpServer(new Server(port), handler, false);
   }
 
   /**
@@ -90,9 +93,70 @@ public final class HttpServer implements Closeable {
    * @return the started server instance
    */
   public static HttpServer start(Handler handler) {
-    return new HttpServer(0, handler);
+    return start(0, handler);
   }
 
+  /**
+   * Starts a new HTTPS test server on a specific port.
+   * 
+   * @param certData certificate and key data; to use a self-signed certificate, call
+   *   {@link ServerTLSConfiguration#makeSelfSignedCertificate()} 
+   * @param port the port to listen on
+   * @param handler An object or lambda that will handle all requests to this server. Use
+   *   the factory methods in {@link Handlers} for standard handlers. If you will need
+   *   to change the behavior of the handler during the lifetime of the server, use
+   *   {@link HandlerSwitcher}.
+   * @return the started server instance
+   */
+  public static HttpServer startSecure(ServerTLSConfiguration certData, int port, Handler handler) {
+    return new HttpServer(makeSecureJettyServer(certData, port), handler, true);
+  }
+  
+  /**
+   * Starts a new HTTPS test server on any available port.
+   * 
+   * @param certData certificate and key data; to use a self-signed certificate, call
+   *   {@link ServerTLSConfiguration#makeSelfSignedCertificate()} 
+   * @param handler An object or lambda that will handle all requests to this server. Use
+   *   the factory methods in {@link Handlers} for standard handlers. If you will need
+   *   to change the behavior of the handler during the lifetime of the server, use
+   *   {@link HandlerSwitcher}.
+   * @return the started server instance
+   */
+  public static HttpServer startSecure(ServerTLSConfiguration certData, Handler handler) {
+    return startSecure(certData, 0, handler);
+  }
+  
+  private static Server makeSecureJettyServer(ServerTLSConfiguration certData, int port) {
+    Server server = new Server(port);
+    
+    HttpConfiguration httpsConfig = new HttpConfiguration();
+    httpsConfig.addCustomizer(new SecureRequestCustomizer());
+    
+    SslContextFactory sslContextFactory = new SslContextFactory.Server();
+    sslContextFactory.addExcludeProtocols("TLSv1.3");
+    try {
+      KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+      ks.load(null);
+      ks.setCertificateEntry("localhost", certData.getCertificate());
+      ks.setEntry("localhost", new KeyStore.PrivateKeyEntry(certData.getPrivateKey(), new Certificate[] { certData.getCertificate() }),
+          new KeyStore.PasswordProtection("secret".toCharArray()));
+      sslContextFactory.setKeyStore(ks);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+    sslContextFactory.setKeyManagerPassword("secret");
+    sslContextFactory.setKeyStorePassword("secret");
+    sslContextFactory.setTrustAll(true);
+    sslContextFactory.setValidateCerts(false);
+    
+    ServerConnector connector = new ServerConnector(server, sslContextFactory);
+    connector.setPort(port);
+    server.setConnectors(new Connector[] { connector });
+    
+    return server;
+  }
+  
   /**
    * Returns the server's port.
    * 

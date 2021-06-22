@@ -47,12 +47,13 @@ java {
 object Versions {
     const val guava = "30.1-jre"
     const val jetty = "9.4.39.v20210325"
-
+    const val okhttpTls = "4.8.1"
 }
 
 dependencies {
     implementation("org.eclipse.jetty:jetty-server:${Versions.jetty}")
     implementation("com.google.guava:guava:${Versions.guava}")
+    implementation("com.squareup.okhttp3:okhttp-tls:${Versions.okhttpTls}")
     
     testImplementation("ch.qos.logback:logback-classic:1.1.9")
     testImplementation("com.squareup.okhttp3:okhttp:4.5.0")
