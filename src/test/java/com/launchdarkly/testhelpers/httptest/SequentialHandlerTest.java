@@ -1,5 +1,7 @@
 package com.launchdarkly.testhelpers.httptest;
 
+import com.launchdarkly.testhelpers.BaseTest;
+
 import org.junit.Test;
 
 import static com.launchdarkly.testhelpers.httptest.TestUtil.simpleGet;
@@ -9,7 +11,7 @@ import static org.hamcrest.Matchers.equalTo;
 import okhttp3.Response;
 
 @SuppressWarnings("javadoc")
-public class SequentialHandlerTest {
+public class SequentialHandlerTest extends BaseTest {
   @Test
   public void handlersAreCalledInSequence() throws Exception {
     Handler handler = Handlers.sequential(Handlers.status(200), Handlers.status(201));

@@ -1,5 +1,7 @@
 package com.launchdarkly.testhelpers.httptest;
 
+import com.launchdarkly.testhelpers.BaseTest;
+
 import org.junit.Test;
 
 import java.util.regex.Pattern;
@@ -14,7 +16,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 @SuppressWarnings("javadoc")
-public class SimpleRouterTest {
+public class SimpleRouterTest extends BaseTest {
   @Test
   public void noPathsMatchByDefault() throws Exception {
     SimpleRouter router = new SimpleRouter();

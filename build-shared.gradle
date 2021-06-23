@@ -1,0 +1,28 @@
+
+// These properties are in their own file to ensure that they're kept in sync between the
+// main Java build (build.gradle.kts) and the Android CI build (build-android-ci.gradle).
+
+allprojects {
+    group = 'com.launchdarkly'
+    version = "${version}"
+    archivesBaseName = "launchdarkly-test-helpers"
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
+}
+
+ext.versions = [
+    "guava": "30.1-jre",
+    "jetty": "9.4.39.v20210325",
+    "okhttpTls": "4.8.1"
+]
+
+dependencies {
+    implementation("org.eclipse.jetty:jetty-server:${versions.jetty}")
+    implementation("com.google.guava:guava:${versions.guava}")
+    implementation("com.squareup.okhttp3:okhttp-tls:${versions.okhttpTls}")
+
+    testImplementation "ch.qos.logback:logback-classic:1.1.9"
+    testImplementation "com.squareup.okhttp3:okhttp:4.5.0"
+    testImplementation "junit:junit:4.12"
+    testImplementation "org.hamcrest:hamcrest-all:1.3"
+}

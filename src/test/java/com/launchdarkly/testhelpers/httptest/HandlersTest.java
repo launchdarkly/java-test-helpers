@@ -1,6 +1,7 @@
 package com.launchdarkly.testhelpers.httptest;
 
 import com.google.common.collect.ImmutableList;
+import com.launchdarkly.testhelpers.BaseTest;
 
 import org.junit.Test;
 
@@ -19,7 +20,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 @SuppressWarnings("javadoc")
-public class HandlersTest {
+public class HandlersTest extends BaseTest {
   @Test
   public void status() throws Exception {
     try (HttpServer server = HttpServer.start(Handlers.status(419))) {

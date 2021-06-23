@@ -31,9 +31,11 @@ repositories {
     mavenCentral()
 }
 
+apply { from("build-shared.gradle") }
+
 base {
     group = "com.launchdarkly"
-    archivesBaseName = "test-helpers"
+    archivesBaseName = "launchdarkly-test-helpers"
     version = version
 }
 
@@ -42,23 +44,6 @@ java {
     withSourcesJar()
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
-}
-
-object Versions {
-    const val guava = "30.1-jre"
-    const val jetty = "9.4.39.v20210325"
-    const val okhttpTls = "4.8.1"
-}
-
-dependencies {
-    implementation("org.eclipse.jetty:jetty-server:${Versions.jetty}")
-    implementation("com.google.guava:guava:${Versions.guava}")
-    implementation("com.squareup.okhttp3:okhttp-tls:${Versions.okhttpTls}")
-    
-    testImplementation("ch.qos.logback:logback-classic:1.1.9")
-    testImplementation("com.squareup.okhttp3:okhttp:4.5.0")
-    testImplementation("junit:junit:4.12")
-    testImplementation("org.hamcrest:hamcrest-all:1.3")
 }
 
 checkstyle {
@@ -104,10 +89,10 @@ publishing {
             from(components["java"])
 
             groupId = "com.launchdarkly"
-            artifactId = "test-helpers"
+            artifactId = "launchdarkly-test-helpers"
 
             pom {
-                name.set("test-helpers")
+                name.set("launchdarkly-test-helpers")
                 description.set("LaunchDarkly Java test helpers")
                 url.set("https://github.com/launchdarkly/java-test-helpers")
                 licenses {

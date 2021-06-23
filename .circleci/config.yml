@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
    win: circleci/windows@2.4.0
+   android: circleci/android@1.0
 
 workflows:
   test:
@@ -29,6 +30,8 @@ workflows:
             - build-linux
       - build-test-windows:
           name: Java 11 - Windows - OpenJDK
+      - build-test-android:
+          name: Android
 
 jobs:
   build-linux:
@@ -99,3 +102,33 @@ jobs:
           path: .\junit
       - store_artifacts:
           path: .\junit
+
+  build-test-android:
+    executor:
+      name: android/android-machine
+      resource-class: large
+
+    steps:
+      - checkout
+
+      # What we want to do here is somewhat unusual: we want Android to run all of our tests from
+      # src/test/java, but run them in the Android emulator (to prove that this library can be
+      # used in tests for other Android projects). Normally, only tests in src/androidTest/java
+      # would be run that way. Also, Android needs a different JUnit test runner annotation on all
+      # of the test classes. So we can't just run the test code as-is.
+      #
+      # This step copies all the code from src/test/java into src/androidTest/java, except for the
+      # base class BaseTest.java, which is already defined in src/androidTest/java to provide the
+      # necessary test runner annotation.
+      - run:
+          name: Copy tests
+          command: rsync -r ./src/test/java/ ./src/androidTest/java/ --exclude='BaseTest.java'
+
+      - android/start-emulator-and-run-tests:
+          system-image: system-images;android-21;default;x86
+          max-tries: 1
+          post-emulator-launch-assemble-command: ./gradlew -b build-android.gradle.kts :assembleAndroidTest
+          test-command: ./gradlew -b build-android.gradle :connectedAndroidTest
+
+      - store_test_results:
+          path: ./build/outputs/androidTest-results

@@ -1,6 +1,7 @@
 package com.launchdarkly.testhelpers.httptest;
 
 import com.google.common.collect.ImmutableList;
+import com.launchdarkly.testhelpers.BaseTest;
 
 import org.junit.Test;
 
@@ -20,7 +21,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 @SuppressWarnings("javadoc")
-public class RequestRecorderTest {
+public class RequestRecorderTest extends BaseTest {
   @Test
   public void requestWithoutBody() throws Exception {
     try (HttpServer server = HttpServer.start(Handlers.status(200))) {
