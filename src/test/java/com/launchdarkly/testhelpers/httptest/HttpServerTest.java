@@ -54,7 +54,7 @@ public class HttpServerTest {
         .sslSocketFactory(certData.getSocketFactory(), certData.getTrustManager())
         .build();
 
-    try (HttpServer server = HttpServer.startSecure(certData, 443, Handlers.status(419))) {
+    try (HttpServer server = HttpServer.startSecure(certData, Handlers.status(419))) {
       assertThat(server.getUri().toString(), startsWith("https:"));
       
       try (Response resp = client.newCall(new Request.Builder().url(server.getUrl()).build()).execute()) {
