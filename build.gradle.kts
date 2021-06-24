@@ -39,6 +39,12 @@ base {
     version = version
 }
 
+dependencies {
+    testImplementation(configurations["testBase"])
+    testImplementation("junit:junit:4.12")
+    testImplementation("org.hamcrest:hamcrest-all:1.3")
+}
+
 java {
     withJavadocJar()
     withSourcesJar()
