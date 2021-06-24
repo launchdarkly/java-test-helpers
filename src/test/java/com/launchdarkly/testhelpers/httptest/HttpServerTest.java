@@ -48,6 +48,19 @@ public class HttpServerTest {
   }
   
   @Test
+  public void serverReturns500StatusForExceptionFromHandler() throws Exception {
+    Handler handler = ctx -> {
+      throw new RuntimeException("unfortunate");
+    };
+    try (HttpServer server = HttpServer.start(handler)) {
+      try (Response resp = simpleGet(server.getUri())) {
+        assertThat(resp.code(), equalTo(500));
+        assertThat(resp.body().string(), equalTo("java.lang.RuntimeException: unfortunate"));
+      }
+    }
+  }
+  
+  @Test
   public void secureServerWithSelfSignedCert() throws Exception {
     ServerTLSConfiguration certData = ServerTLSConfiguration.makeSelfSignedCertificate();
     OkHttpClient client = new OkHttpClient.Builder()

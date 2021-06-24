@@ -102,10 +102,9 @@ public final class HttpServer implements Closeable {
       recorder.apply(ctx);
       try {
         handler.apply(ctx);
-      } catch (IllegalArgumentException e) {
-        ctx.setStatus(400);
       } catch (Exception e) {
         ctx.setStatus(500);
+        ctx.write(e.toString().getBytes());
       }
     };
     
