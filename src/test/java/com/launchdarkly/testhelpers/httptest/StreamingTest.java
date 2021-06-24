@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.launchdarkly.testhelpers.BaseTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import java.io.InputStream;
@@ -97,7 +98,7 @@ public class StreamingTest extends BaseTest {
     try (HttpServer server = HttpServer.start(handler)) {
       try (Response resp = simpleGet(server.getUri())) {
         assertThat(resp.code(), equalTo(200));
-        assertThat(resp.header("Content-Type"), equalTo(expectedContentType));
+        assertThat(resp.header("Content-Type"), Matchers.equalToIgnoringCase(expectedContentType));
         
         InputStream stream = resp.body().byteStream();
         

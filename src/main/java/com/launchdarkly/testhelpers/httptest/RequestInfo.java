@@ -31,6 +31,7 @@ public final class RequestInfo {
    * 
    * @param request the original request
    */
+  @SuppressWarnings("unchecked") // unchecked casts are due to unfortunate use of Enumeration by HttpServletRequest
   public RequestInfo(HttpServletRequest request) {
     this.method = request.getMethod().toUpperCase();
     this.path = request.getPathInfo();

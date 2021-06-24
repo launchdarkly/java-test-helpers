@@ -1,10 +1,9 @@
 package com.launchdarkly.testhelpers.httptest;
 
 import org.eclipse.jetty.server.HttpConnection;
-import org.eclipse.jetty.util.Callback;
 
+import java.io.IOException;
 import java.net.ProtocolException;
-import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.time.Duration;
 import java.util.concurrent.Semaphore;
@@ -239,9 +238,11 @@ public abstract class Handlers {
   public static Handler malformedResponse() {
     return ctx -> {
       HttpConnection conn = HttpConnection.getCurrentConnection();
-      conn.getHttpChannel().getEndPoint().write(Callback.from(() -> {
-        conn.getHttpChannel().getEndPoint().close();
-      }), ByteBuffer.wrap(new byte[] { 10 }));
+      try {
+        conn.getEndPoint().close();
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     };
   }
   
