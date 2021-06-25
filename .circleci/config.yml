@@ -49,12 +49,6 @@ jobs:
     parameters:
       docker-image:
         type: string
-      with-coverage:
-        type: boolean
-        default: false
-      check-javadoc:
-        type: boolean
-        default: false
     docker:
       - image: <<parameters.docker-image>>
     steps:
