@@ -7,7 +7,6 @@ import javax.servlet.http.HttpServletResponse;
  * <p>
  * Use the factory methods in {@link Handlers} to create standard implementations.
  */
-@FunctionalInterface
 public interface Handler {
   /**
    * Processes the request.
