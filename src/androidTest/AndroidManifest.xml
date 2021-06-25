@@ -9,6 +9,6 @@
 
     <instrumentation
         android:name="android.support.test.runner.AndroidJUnitRunner"
-        android:targetPackage="com.launchdarkly.testhelpers" />
+        android:targetPackage="com.launchdarkly.testhelpers.httptest" />
 
 </manifest>
