@@ -19,15 +19,12 @@ import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509ExtendedKeyManager;
-import javax.net.ssl.X509ExtendedTrustManager;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -124,41 +121,10 @@ public final class JettyHttpServerDelegate implements HttpServer.Delegate {
       }
     };
     
-    X509ExtendedTrustManager trustManager = new X509ExtendedTrustManager() {
-      @Override
-      public X509Certificate[] getAcceptedIssuers() {
-        return null;
-      }
-      
-      @Override
-      public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
-      }
-      
-      @Override
-      public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
-      }
-      
-      @Override
-      public void checkServerTrusted(X509Certificate[] arg0, String arg1, SSLEngine arg2) throws CertificateException {
-      }
-      
-      @Override
-      public void checkServerTrusted(X509Certificate[] arg0, String arg1, Socket arg2) throws CertificateException {
-      }
-      
-      @Override
-      public void checkClientTrusted(X509Certificate[] arg0, String arg1, SSLEngine arg2) throws CertificateException {
-      }
-      
-      @Override
-      public void checkClientTrusted(X509Certificate[] arg0, String arg1, Socket arg2) throws CertificateException {
-      }
-    };
-    
     SSLContext sslContext;
     try {
       sslContext = SSLContext.getInstance("TLSv1.2");
-      sslContext.init(new KeyManager[] { keyManager }, new TrustManager[] { trustManager }, new SecureRandom());
+      sslContext.init(new KeyManager[] { keyManager }, new TrustManager[0], new SecureRandom());
     } catch (NoSuchAlgorithmException e) {
       throw new RuntimeException(e);
     } catch (KeyManagementException e) {
