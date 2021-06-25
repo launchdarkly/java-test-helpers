@@ -1,7 +1,6 @@
 package com.launchdarkly.testhelpers.httptest;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import com.launchdarkly.testhelpers.BaseTest;
 
 import org.hamcrest.Matchers;
@@ -9,6 +8,7 @@ import org.junit.Test;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
@@ -23,9 +23,13 @@ public class StreamingTest extends BaseTest {
   @Test
   public void basicChunkedResponseWithNoCharsetInHeader() throws Exception {
     List<String> chunks = ImmutableList.of("first.", "second.", "third");
+    List<Handler> handlers = new ArrayList<>();
+    for (String chunk: chunks) {
+      handlers.add(Handlers.writeChunkString(chunk));
+    }
     doStreamingTest(
         Handlers.startChunks("text/plain", null),
-        Iterables.toArray(Iterables.transform(chunks, s -> Handlers.writeChunkString(s)), Handler.class),
+        handlers,
         Handlers.hang(),
         "text/plain",
         chunks
@@ -35,9 +39,13 @@ public class StreamingTest extends BaseTest {
   @Test
   public void basicChunkedResponseWithCharsetInHeader() throws Exception {
     List<String> chunks = ImmutableList.of("first.", "second.", "third");
+    List<Handler> handlers = new ArrayList<>();
+    for (String chunk: chunks) {
+      handlers.add(Handlers.writeChunkString(chunk));
+    }
     doStreamingTest(
         Handlers.startChunks("text/plain", Charset.forName("UTF-8")),
-        Iterables.toArray(Iterables.transform(chunks, s -> Handlers.writeChunkString(s)), Handler.class),
+        handlers,
         Handlers.hang(),
         "text/plain;charset=utf-8",
         chunks
@@ -48,12 +56,12 @@ public class StreamingTest extends BaseTest {
   public void sseStream() throws Exception {
     doStreamingTest(
         Handlers.SSE.start(),
-        new Handler[] {
+        ImmutableList.of(
              Handlers.SSE.event("e1", "d1"),
              Handlers.SSE.comment("comment"),
              Handlers.SSE.event("e2", "d2"),
-             Handlers.SSE.event("data: all done"),
-        },
+             Handlers.SSE.event("data: all done")
+        ),
         Handlers.SSE.leaveOpen(),
         "text/event-stream;charset=utf-8",
         ImmutableList.of(
@@ -67,7 +75,7 @@ public class StreamingTest extends BaseTest {
   
   private void doStreamingTest(
       Handler startAction,
-      Handler[] chunkActions,
+      List<Handler> chunkActions,
       Handler endAction,
       String expectedContentType,
       List<String> expectedChunks
@@ -83,7 +91,7 @@ public class StreamingTest extends BaseTest {
         startAction,
         ctx -> {
           for (int i = 0; i < expectedChunks.size(); i++) {
-            chunkActions[i].apply(ctx);
+            chunkActions.get(i).apply(ctx);
             didWriteChunk[i].release();
             try {
               didReadChunk[i].acquire();
