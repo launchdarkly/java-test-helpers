@@ -5,8 +5,8 @@ import org.eclipse.jetty.server.HttpConnection;
 import java.io.IOException;
 import java.net.ProtocolException;
 import java.nio.charset.Charset;
-import java.time.Duration;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Factory methods for standard {@link Handler} implementations.
@@ -182,12 +182,13 @@ public abstract class Handlers {
    * Creates a {@link Handler} that sleeps for the specified amount of time.
    * 
    * @param delay how long to delay
+   * @param unit the time unit (null defaults to milliseconds)
    * @return a {@link Handler}
    */
-  public static Handler delay(Duration delay) {
+  public static Handler delay(long delay, TimeUnit unit) {
     return ctx -> {
       try {
-        Thread.sleep(delay.toMillis());
+        Thread.sleep((unit == null ? TimeUnit.MILLISECONDS : unit).toMillis(delay));
       } catch (InterruptedException e) {}
     };
   }

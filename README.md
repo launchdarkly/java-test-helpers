@@ -9,6 +9,10 @@ This project centralizes some test support code that is used by LaunchDarkly's J
 
 See [API documentation](http://javadoc.io/doc/com.launchdarkly/java-test-helpers) for full details.
 
+## Compatibility
+
+The minimum Java version is 8. The library is also usable in Android API 21 and above.
+
 ## Contributing
 
 We encourage pull requests and other contributions from the community. See [Contributing](CONTRIBUTING.md).

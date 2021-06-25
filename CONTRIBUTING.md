@@ -12,8 +12,10 @@ We encourage pull requests and other contributions from the community. Before su
  
 ### Prerequisites
  
-The project builds with [Gradle](https://gradle.org/) and should be built against Java 8.
- 
+The project builds with [Gradle](https://gradle.org/).
+
+It should be built against Java 8. However, not all Java 8 usages are allowed (for instance, `java.time.Duration` is not), because we want the library to be usable in Android as well as server-side Java. Check `build-android.gradle` to see the current minimum supported Android API version; there is a CI build that verifies that it can run under Android with that version.
+
 ### Building
 
 To build the project without running any tests:
