@@ -1,0 +1,12 @@
+
+publications:
+  - url: https://oss.sonatype.org/content/groups/public/com/launchdarkly/java-test-helpers/
+    description: Sonatype
+  - url: https://javadoc.io/doc/com.launchdarkly/java-test-helpers
+    description: documentation (javadoc.io)
+
+template:
+  name: gradle
+
+documentation:
+  githubPages: true
