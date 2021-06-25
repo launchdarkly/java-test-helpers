@@ -105,6 +105,9 @@ public final class HttpServer implements Closeable {
       } catch (IllegalArgumentException e) {
         ctx.setStatus(400);
       } catch (Exception e) {
+        System.out.println("[" + HttpServer.class.getName() +
+            "] Uncaught exception from HTTP handler! This likely indicates a fault in test logic. " + e);
+        e.printStackTrace();
         ctx.setStatus(500);
       }
     };
