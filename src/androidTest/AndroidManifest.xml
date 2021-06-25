@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.launchdarkly.testhelpers">
 
-    <application>
+    <application android:name="androidx.multidex.MultiDexApplication">
         <activity
             android:name=".TestActivity" />
     </application>
