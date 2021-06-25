@@ -25,7 +25,7 @@ public class StreamingTest extends BaseTest {
     List<String> chunks = ImmutableList.of("first.", "second.", "third");
     doStreamingTest(
         Handlers.startChunks("text/plain", null),
-        Iterables.toArray(Iterables.transform(chunks, Handlers::writeChunkString), Handler.class),
+        Iterables.toArray(Iterables.transform(chunks, s -> Handlers.writeChunkString(s)), Handler.class),
         Handlers.hang(),
         "text/plain",
         chunks
@@ -37,7 +37,7 @@ public class StreamingTest extends BaseTest {
     List<String> chunks = ImmutableList.of("first.", "second.", "third");
     doStreamingTest(
         Handlers.startChunks("text/plain", Charset.forName("UTF-8")),
-        Iterables.toArray(Iterables.transform(chunks, Handlers::writeChunkString), Handler.class),
+        Iterables.toArray(Iterables.transform(chunks, s -> Handlers.writeChunkString(s)), Handler.class),
         Handlers.hang(),
         "text/plain;charset=utf-8",
         chunks
