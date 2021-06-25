@@ -26,24 +26,13 @@ repositories {
 apply from: 'build-shared.gradle'
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion '28.0.3'
+    compileSdkVersion 30
+    buildToolsVersion '30.0.3'
 
     defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 26
-        versionCode 1
-        versionName version
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles 'consumer-proguard-rules.pro'
-
-        // The following argument makes the Android Test Orchestrator run its
-        // "pm clear" command after each test invocation. This command ensures
-        // that the app's state is completely cleared between tests.
-        testInstrumentationRunnerArguments clearPackageData: 'true'
-
-        // The dexer doesn't like the size of the Jetty jars without this option
-        multiDexEnabled true
+        minSdkVersion 21
+        targetSdkVersion 30
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     compileOptions {
@@ -56,14 +45,23 @@ android {
         exclude 'META-INF/**'
     }
 
-    dexOptions {
-        javaMaxHeapSize "4g"
+    testOptions {
+        execution = "ANDROIDX_TEST_ORCHESTRATOR"
     }
+
+    useLibrary("android.test.runner")
+    useLibrary("android.test.base")
+    useLibrary("android.test.mock")
 }
 
 dependencies {
     androidTestImplementation configurations.testBase
     androidTestImplementation "junit:junit:4.12"
     androidTestImplementation "org.hamcrest:hamcrest-library:1.3"
-    androidTestImplementation "com.android.support.test:runner:1.0.2"
+    androidTestImplementation "androidx.test:runner:1.3.0"
+    androidTestImplementation "androidx.test:rules:1.3.0"
+    androidTestImplementation "androidx.test:core:1.3.0"
+    androidTestImplementation "androidx.test.ext:junit:1.1.2"
+
+    androidTestUtil "androidx.test:orchestrator:1.3.0"
 }
