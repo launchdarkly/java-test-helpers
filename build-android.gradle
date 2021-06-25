@@ -41,6 +41,9 @@ android {
         // "pm clear" command after each test invocation. This command ensures
         // that the app's state is completely cleared between tests.
         testInstrumentationRunnerArguments clearPackageData: 'true'
+
+        // The dexer doesn't like the size of the Jetty jars without this option
+        multiDexEnabled true
     }
 
     compileOptions {
