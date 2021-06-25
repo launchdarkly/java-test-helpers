@@ -128,7 +128,7 @@ jobs:
           system-image: system-images;android-21;default;x86
           max-tries: 1
           post-emulator-launch-assemble-command: ./gradlew -b build-android.gradle :assembleAndroidTest
-          test-command: ./gradlew -b build-android.gradle :connectedAndroidTest
+          test-command: ./gradlew -b build-android.gradle --stacktrace :connectedAndroidTest
 
       - store_test_results:
           path: ./build/outputs/androidTest-results
