@@ -25,8 +25,6 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * Jetty implementation used by {@link HttpServer}.
- * @author elibishop
- *
  */
 public final class JettyHttpServerDelegate implements HttpServer.Delegate {
   private final Server server;
