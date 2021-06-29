@@ -1,13 +1,11 @@
 package com.launchdarkly.testhelpers;
 
 import com.google.common.base.Joiner;
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import org.hamcrest.Description;
-import org.hamcrest.DiagnosingMatcher;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 
@@ -16,7 +14,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.launchdarkly.testhelpers.JsonTestValue.jsonFromValue;
@@ -29,8 +26,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
  * @since 1.1.0
  */
 public abstract class JsonAssertions {
-  private static final Gson gson = new Gson();
-  
   /**
    * Parses two strings as JSON and compares them for deep equality. If they are unequal,
    * it tries to describe the difference as specifically as possible by recursing into
@@ -339,37 +334,6 @@ public abstract class JsonAssertions {
         }
         mismatchDescription.appendText("not a JSON array: ").appendText(actual.raw);
         return false;
-      }
-    };
-  }
-  
-  private static interface Function3<A, B, C, D> {
-    D apply(A a, B b, C c);
-  }
-  
-  private static Matcher<String> jsonParsingMatcher(Consumer<Description> describeFn,
-      Function3<JsonElement, String, Description, Boolean> matchFn) {
-    return new DiagnosingMatcher<String>() {
-      @Override
-      public void describeTo(Description description) {
-        describeFn.accept(description);
-      }
-      
-      @Override
-      protected boolean matches(Object item, Description mismatchDescription) {
-        if (item == null) {
-          mismatchDescription.appendText("no value");
-          return false;
-        }
-        String actual = (String)item;
-        JsonElement actualJson;
-        try {
-          actualJson = gson.fromJson(actual, JsonElement.class);
-        } catch (Exception e) {
-          mismatchDescription.appendText("not valid JSON: " + e).appendText(actual);
-          return false;
-        }
-        return matchFn.apply(actualJson, actual, mismatchDescription);
       }
     };
   }
