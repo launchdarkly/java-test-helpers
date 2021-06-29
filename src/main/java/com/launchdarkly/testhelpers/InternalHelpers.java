@@ -8,7 +8,7 @@ abstract class InternalHelpers {
   }
   
   static String timeDesc(long value, TimeUnit unit) {
-    String unitName = unit.name().toLowerCase();
+    String unitName = timeUnit(unit).name().toLowerCase();
     return String.format("%d %s", value, value == 1 ? unitName.substring(0, unitName.length() - 1) : unitName);
   }
 }
