@@ -6,14 +6,25 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import org.hamcrest.Description;
+import org.hamcrest.DiagnosingMatcher;
+import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeDiagnosingMatcher;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.launchdarkly.testhelpers.JsonTestValue.jsonFromValue;
+import static com.launchdarkly.testhelpers.JsonTestValue.jsonOf;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
- * Test assertions related to JSON.
+ * Test assertions and matchers related to JSON.
  * 
  * @since 1.1.0
  */
@@ -30,27 +41,69 @@ public abstract class JsonAssertions {
    * @throws AssertionError if the values are not deeply equal, or are not valid JSON
    */
   public static void assertJsonEquals(String expected, String actual) {
-    JsonElement expectedJson, actualJson;
-    try {
-      expectedJson = gson.fromJson(expected, JsonElement.class);
-    } catch (Exception e) {
-      throw new AssertionError("expected string is not valid JSON: " + e);
-    }
-    try {
-      actualJson = gson.fromJson(actual, JsonElement.class);
-    } catch (Exception e) {
-      throw new AssertionError("actual string is not valid JSON: " + e);
-    }
-    if (actualJson.equals(expectedJson)) {
-      return;
-    }
-    String diff = describeJsonDifference(expectedJson, actualJson, "", false);
-    if (diff == null) {
-      diff = "expected: " + expected + "\nactual: " + actual;
-    } else {
-      diff = diff + "\nfull actual JSON string: " + actual;
-    }
-    throw new AssertionError("JSON strings did not match\n" + diff);
+    assertThat(jsonOf(actual), jsonEquals(jsonOf(expected)));
+  }
+  
+  /**
+   * Equivalent to {@link #assertJsonEquals(String, String)}, but as a typed matcher.
+   * 
+   * @param expected the expected JSON value
+   * @return a matcher
+   */
+  public static Matcher<JsonTestValue> jsonEquals(final JsonTestValue expected) {
+    checkNotNull(expected, "expected");
+    return new TypeSafeDiagnosingMatcher<JsonTestValue>() {
+      @Override
+      public void describeTo(Description description) {
+        description.appendText("JSON is equal to: " + expected);
+      }
+
+      @Override
+      protected boolean matchesSafely(JsonTestValue actual, Description mismatchDescription) {
+        if (!actual.isDefined()) {
+          if (!expected.isDefined()) {
+            return true;
+          }
+          mismatchDescription.appendValue(actual);
+          return false;
+        }
+        if (!expected.isDefined()) {
+          mismatchDescription.appendValue(expected);
+          return false;
+        }
+        if (actual.parsed.equals(expected.parsed)) {
+          return true;
+        }
+        String diff = describeJsonDifference(expected.parsed, actual.parsed, "", false);
+        if (diff == null) {
+          diff = "expected: " + expected + "\nactual: " + actual.raw;
+        } else {
+          diff = diff + "\nfull JSON was: " + actual.raw;
+        }
+        mismatchDescription.appendText(diff);
+        return false;
+      }
+    };
+  }
+  
+  /**
+   * Equivalent to {@code jsonEquals(JsonTestValue.jsonOf(expected))}.
+   * 
+   * @param expected the expected JSON as a string
+   * @return a matcher
+   */
+  public static Matcher<JsonTestValue> jsonEquals(String expected) {
+    return jsonEquals(jsonOf(expected));
+  }
+
+  /**
+   * Equivalent to {@code jsonEquals(JsonTestValue.jsonFromValue(expected))}.
+   * 
+   * @param expected a value that will be serialized to JSON and matched
+   * @return a matcher
+   */
+  public static Matcher<JsonTestValue> jsonEqualsValue(Object expected) {
+    return jsonEquals(jsonFromValue(expected));
   }
   
   /**
@@ -58,33 +111,267 @@ public abstract class JsonAssertions {
    * objects in the actual data to contain extra properties that are not in the expected
    * data.
    * 
-   * @param expectedSubset the expected JSON string
+   * @param expected the expected JSON string
    * @param actual the actual JSON string
    * @throws AssertionError if the expected values are not a subset of the actual
    *   values, or if the strings are not valid JSON
    */
-  public static void assertJsonSubset(String expectedSubset, String actual) {
-    JsonElement expectedJson, actualJson;
-    try {
-      expectedJson = gson.fromJson(expectedSubset, JsonElement.class);
-    } catch (Exception e) {
-      throw new AssertionError("expected string is not valid JSON: " + e);
-    }
-    try {
-      actualJson = gson.fromJson(actual, JsonElement.class);
-    } catch (Exception e) {
-      throw new AssertionError("actual string is not valid JSON: " + e);
-    }
-    if (isJsonSubset(expectedJson, actualJson)) {
-      return;
-    }
-    String diff = describeJsonDifference(expectedJson, actualJson, "", true);
-    if (diff == null) {
-      diff = "expected: " + expectedSubset + "\nactual: " + actual;
-    } else {
-      diff = diff + "\nfull actual JSON string: " + actual;
-    }
-    throw new AssertionError("JSON string did not contain expected properties\n" + diff);
+  public static void assertJsonIncludes(String expected, String actual) {
+    assertThat(jsonOf(actual), jsonIncludes(expected));
+  }
+  
+  /**
+   * Equivalent to {@link #assertJsonIncludes(String, String)}, but as a Hamcrest matcher.
+   * 
+   * @param expected the expected JSON object properties
+   * @return a string matcher
+   */
+  public static Matcher<JsonTestValue> jsonIncludes(JsonTestValue expected) {
+    checkNotNull(expected, "expected");
+    return new TypeSafeDiagnosingMatcher<JsonTestValue>() {
+      @Override
+      public void describeTo(Description description) {
+        description.appendText("includes these JSON properties: " + expected);
+      }
+
+      @Override
+      protected boolean matchesSafely(JsonTestValue actual, Description mismatchDescription) {
+        if (!actual.isDefined()) {
+          if (!expected.isDefined()) {
+            return true;
+          }
+          mismatchDescription.appendValue(actual);
+          return false;
+        }
+        if (!expected.isDefined()) {
+          mismatchDescription.appendValue(expected);
+          return false;
+        }
+        if (isJsonSubset(expected.parsed, actual.parsed)) {
+          return true;
+        }
+        String diff = describeJsonDifference(expected.parsed, actual.parsed, "", true);
+        if (diff == null) {
+          diff = "expected: " + expected + "\nactual: " + actual.raw;
+        } else {
+          diff = diff + "\nfull JSON was: " + actual.raw;
+        }
+        mismatchDescription.appendText(diff);
+        return false;
+      }
+    };
+  }
+
+  /**
+   * Equivalent to {@code jsonIncludes(JsonTestValue.jsonOf(expected))}.
+   * 
+   * @param expected the expected JSON as a string
+   * @return a matcher
+   */
+  public static Matcher<JsonTestValue> jsonIncludes(String expected) {
+    return jsonIncludes(jsonOf(expected));
+  }
+  
+  /**
+   * A matcher that verifies that the input value is a JSON null. This is equivalent to
+   * {@code jsonEquals(JsonTestValue.jsonOf("null"))}.
+   * 
+   * @return a matcher
+   */
+  public static Matcher<JsonTestValue> jsonNull() {
+    return jsonEquals(jsonOf("null"));
+  }
+
+  /**
+   * A matcher that verifies that the input value is completely undefined (as opposed to
+   * being a JSON null).
+   * 
+   * @return a matcher
+   */
+  public static Matcher<JsonTestValue> jsonUndefined() {
+    return new TypeSafeDiagnosingMatcher<JsonTestValue>() {
+      @Override
+      public void describeTo(Description description) {
+        description.appendText("is undefined");
+      }
+
+      @Override
+      protected boolean matchesSafely(JsonTestValue item, Description mismatchDescription) {
+        if (item == null || !item.isDefined()) {
+          return true;
+        }
+        mismatchDescription.appendText("had value: " + item.raw);
+        return false;
+      }
+    };
+  }
+
+  /**
+   * A matcher that verifies that the input value is an object that has a property with
+   * the specified name, and that the property value matches the specified matcher.
+   * 
+   * @param name the property name
+   * @param matcher a matcher for the property value
+   * @return a matcher
+   */
+
+  public static Matcher<JsonTestValue> jsonProperty(final String name, final Matcher<JsonTestValue> matcher) {
+    checkNotNull(name, "name");
+    checkNotNull(matcher, "matcher");
+    return new TypeSafeDiagnosingMatcher<JsonTestValue>() {
+      @Override
+      public void describeTo(Description description) {
+        description.appendText(String.format("property \"%s\": ", name));
+        matcher.describeTo(description);
+      }
+
+      @Override
+      protected boolean matchesSafely(JsonTestValue actual, Description mismatchDescription) {
+        if (!actual.isDefined()) {
+          mismatchDescription.appendValue(actual);
+          return false;
+        }
+        if (actual.parsed instanceof JsonObject) {
+          JsonTestValue propValue = JsonTestValue.ofParsed(((JsonObject)actual.parsed).get(name));
+          if (!matcher.matches(propValue)) {
+            matcher.describeMismatch(propValue, mismatchDescription);
+            return false;
+          }
+          return true;
+        }
+        mismatchDescription.appendText("not a JSON object: ").appendText(actual.raw);
+        return false;
+      }
+    };
+  }
+
+  /**
+   * A shortcut for using {@link #jsonProperty} with {@link #jsonEquals(JsonTestValue)}.
+   * 
+   * @param name a property name
+   * @param value the desired value
+   * @return a matcher
+   */
+  public static Matcher<JsonTestValue> jsonProperty(String name, JsonTestValue value) {
+    return jsonProperty(name, jsonEquals(value));
+  }
+  
+  /**
+   * A shortcut for using {@link #jsonProperty(String, JsonTestValue)} with
+   * {@link JsonTestValue#jsonFromValue(Object)}.
+   * 
+   * @param name a property name
+   * @param value a value that will be converted to JSON
+   * @return a matcher
+   */
+  public static Matcher<JsonTestValue> jsonProperty(String name, boolean value) {
+    return jsonProperty(name, jsonFromValue(value));
+  }
+  
+  /**
+   * A shortcut for using {@link #jsonProperty(String, JsonTestValue)} with
+   * {@link JsonTestValue#jsonFromValue(Object)}.
+   * 
+   * @param name a property name
+   * @param value a value that will be converted to JSON
+   * @return a matcher
+   */
+  public static Matcher<JsonTestValue> jsonProperty(String name, int value) {
+    return jsonProperty(name, jsonFromValue(value));
+  }
+  
+  /**
+   * A shortcut for using {@link #jsonProperty(String, JsonTestValue)} with
+   * {@link JsonTestValue#jsonFromValue(Object)}.
+   * 
+   * @param name a property name
+   * @param value a value that will be converted to JSON
+   * @return a matcher
+   */
+  public static Matcher<JsonTestValue> jsonProperty(String name, double value) {
+    return jsonProperty(name, jsonFromValue(value));
+  }
+
+  /**
+   * A shortcut for using {@link #jsonProperty(String, JsonTestValue)} with
+   * {@link JsonTestValue#jsonFromValue(Object)}.
+   * 
+   * @param name a property name
+   * @param value a value that will be converted to JSON
+   * @return a matcher
+   */
+  public static Matcher<JsonTestValue> jsonProperty(String name, String value) {
+    return jsonProperty(name, jsonFromValue(value));
+  }
+  
+  /**
+   * A matcher that verifies that the input value is an array whose elements match the
+   * specified matchers.
+   * 
+   * @param elementsMatcher a matcher for the contents of the array
+   * @return a matcher
+   */
+  public static Matcher<JsonTestValue> isJsonArray(final Matcher<Iterable<? extends JsonTestValue>> elementsMatcher) {
+    checkNotNull(elementsMatcher, "elementsMatcher");
+    return new TypeSafeDiagnosingMatcher<JsonTestValue>() {
+      @Override
+      public void describeTo(Description description) {
+        description.appendText("JSON array: ");
+        elementsMatcher.describeTo(description);
+      }
+
+      @Override
+      protected boolean matchesSafely(JsonTestValue actual, Description mismatchDescription) {
+        if (!actual.isDefined()) {
+          mismatchDescription.appendValue(actual);
+          return false;
+        }
+        if (actual.parsed instanceof JsonArray) {
+          List<JsonTestValue> values = new ArrayList<>();
+          for (JsonElement element: (JsonArray)actual.parsed) {
+            values.add(JsonTestValue.ofParsed(element));
+          }
+          if (!elementsMatcher.matches(values)) {
+            elementsMatcher.describeMismatch(values, mismatchDescription);
+            return false;
+          }
+          return true;
+        }
+        mismatchDescription.appendText("not a JSON array: ").appendText(actual.raw);
+        return false;
+      }
+    };
+  }
+  
+  private static interface Function3<A, B, C, D> {
+    D apply(A a, B b, C c);
+  }
+  
+  private static Matcher<String> jsonParsingMatcher(Consumer<Description> describeFn,
+      Function3<JsonElement, String, Description, Boolean> matchFn) {
+    return new DiagnosingMatcher<String>() {
+      @Override
+      public void describeTo(Description description) {
+        describeFn.accept(description);
+      }
+      
+      @Override
+      protected boolean matches(Object item, Description mismatchDescription) {
+        if (item == null) {
+          mismatchDescription.appendText("no value");
+          return false;
+        }
+        String actual = (String)item;
+        JsonElement actualJson;
+        try {
+          actualJson = gson.fromJson(actual, JsonElement.class);
+        } catch (Exception e) {
+          mismatchDescription.appendText("not valid JSON: " + e).appendText(actual);
+          return false;
+        }
+        return matchFn.apply(actualJson, actual, mismatchDescription);
+      }
+    };
   }
   
   private static boolean isJsonSubset(JsonElement expected, JsonElement actual) {

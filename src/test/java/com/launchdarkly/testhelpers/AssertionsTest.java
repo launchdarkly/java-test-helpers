@@ -1,6 +1,5 @@
 package com.launchdarkly.testhelpers;
 
-import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
@@ -8,6 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
 
 @SuppressWarnings("javadoc")
 public class AssertionsTest {
@@ -36,7 +36,7 @@ public class AssertionsTest {
   @Test
   public void assertPolledFunctionReturnsValueFailure() {
     AtomicInteger i = new AtomicInteger(0);
-    try {
+    requireAssertionError(() -> {
       Assertions.assertPolledFunctionReturnsValue(
           200, TimeUnit.MILLISECONDS,
           10, TimeUnit.MILLISECONDS,
@@ -44,8 +44,16 @@ public class AssertionsTest {
             i.incrementAndGet();
             return null;
           });
+    });
+    assertThat(i.get(), greaterThan(1));
+  }
+  
+  public static String requireAssertionError(Runnable action) {
+    try {
+      action.run();
+      throw new AssertionError("expected AssertionError, did not get one");
     } catch (AssertionError e) {
-      assertThat(i.get(), Matchers.greaterThan(1));
+      return e.getMessage();
     }
   }
 }

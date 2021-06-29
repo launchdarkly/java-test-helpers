@@ -56,11 +56,11 @@ dependencies {
     implementation("com.google.code.gson:gson:${Versions.gson}")
     implementation("com.google.guava:guava:${Versions.guava}")
     implementation("com.squareup.okhttp3:okhttp-tls:${Versions.okhttpTls}")
-    
+    implementation("org.hamcrest:hamcrest-all:1.3")
+
     testImplementation("ch.qos.logback:logback-classic:1.1.9")
     testImplementation("com.squareup.okhttp3:okhttp:4.5.0")
     testImplementation("junit:junit:4.12")
-    testImplementation("org.hamcrest:hamcrest-all:1.3")
 }
 
 checkstyle {

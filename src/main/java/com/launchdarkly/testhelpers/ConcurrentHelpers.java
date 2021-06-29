@@ -1,11 +1,16 @@
 package com.launchdarkly.testhelpers;
 
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeDiagnosingMatcher;
+
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import static com.launchdarkly.testhelpers.InternalHelpers.timeDesc;
 import static com.launchdarkly.testhelpers.InternalHelpers.timeUnit;
 
 /**
@@ -15,16 +20,18 @@ public abstract class ConcurrentHelpers {
   /**
    * Asserts that a future is completed within the specified timeout.
    * 
+   * @param <T> the future's value type
    * @param future the future
    * @param timeout the maximum time to wait
    * @param timeoutUnit the time unit for the timeout (null defaults to milliseconds)
+   * @return the completed value
    * @throws AssertionError if the timeout expires
    */
-  public static void assertFutureIsCompleted(Future<?> future, long timeout, TimeUnit timeoutUnit) {
+  public static <T> T assertFutureIsCompleted(Future<T> future, long timeout, TimeUnit timeoutUnit) {
     try {
-      future.get(timeout, timeUnit(timeoutUnit));
+      return future.get(timeout, timeUnit(timeoutUnit));
     } catch (TimeoutException e) {
-      throw new AssertionError("timed out waiting for Future");
+      throw new AssertionError("Future was not completed within " + timeDesc(timeout, timeoutUnit));
     } catch (ExecutionException e) {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {
@@ -33,17 +40,50 @@ public abstract class ConcurrentHelpers {
   }
   
   /**
-   * Asserts that a future is completed within the specified timeout.
+   * Equivalent to {@link #assertFutureIsCompleted(Future, long, TimeUnit)}, but as a Hamcrest matcher.
    * 
+   * @param <T> the future's value type
+   * @param timeout the maximum time to wait
+   * @param timeoutUnit the time unit for the timeout (null defaults to milliseconds)
+   * @return a matcher
+   */
+  public static <T> Matcher<Future<T>> isCompletedWithin(long timeout, TimeUnit timeoutUnit) {
+    return new TypeSafeDiagnosingMatcher<Future<T>>() {
+      @Override
+      public void describeTo(Description description) {
+        description.appendText("Future is completed within " + timeDesc(timeout, timeoutUnit));
+      }
+
+      @Override
+      protected boolean matchesSafely(Future<T> item, Description mismatchDescription) {
+        try {
+          item.get(timeout, timeUnit(timeoutUnit));
+          return true;
+        } catch (TimeoutException e) {
+          mismatchDescription.appendText("timed out");
+          return false;
+        } catch (ExecutionException e) {
+          throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    };
+  }
+  
+  /**
+   * Asserts that a future is completed within the specified timeout.
+   *
+   * @param <T> the future's value type
    * @param future the future
    * @param timeout the maximum time to wait
    * @param timeoutUnit the time unit for the timeout (null defaults to milliseconds)
    * @throws AssertionError if the future is completed
    */
-  public static void assertFutureIsNotCompleted(Future<?> future, long timeout, TimeUnit timeoutUnit) {
+  public static <T> void assertFutureIsNotCompleted(Future<T> future, long timeout, TimeUnit timeoutUnit) {
     try {
-      future.get(timeout, timeUnit(timeoutUnit));
-      throw new AssertionError("Future was unexpectedly completed");
+      T value = future.get(timeout, timeUnit(timeoutUnit));
+      throw new AssertionError("Future was unexpectedly completed with value: " + value);
     } catch (TimeoutException e) {
       return;
     } catch (ExecutionException e) {
@@ -51,6 +91,38 @@ public abstract class ConcurrentHelpers {
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  /**
+   * Equivalent to {@link #assertFutureIsNotCompleted(Future, long, TimeUnit)}, but as a Hamcrest matcher.
+   * 
+   * @param <T> the future's value type
+   * @param timeout the maximum time to wait
+   * @param timeoutUnit the time unit for the timeout (null defaults to milliseconds)
+   * @return a matcher
+   */
+  public static <T> Matcher<Future<T>> isNotCompletedWithin(long timeout, TimeUnit timeoutUnit) {
+    return new TypeSafeDiagnosingMatcher<Future<T>>() {
+      @Override
+      public void describeTo(Description description) {
+        description.appendText("Future is not completed within " + timeDesc(timeout, timeoutUnit));
+      }
+
+      @Override
+      protected boolean matchesSafely(Future<T> item, Description mismatchDescription) {
+        try {
+          T value = item.get(timeout, timeUnit(timeoutUnit));
+          mismatchDescription.appendText("unexpectedly completed with value: " + value);
+          return false;
+        } catch (TimeoutException e) {
+          return true;
+        } catch (ExecutionException e) {
+          throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    };
   }
   
   /**
@@ -67,7 +139,7 @@ public abstract class ConcurrentHelpers {
     try {
       T value = values.poll(timeout, timeUnit(timeoutUnit));
       if (value == null) {
-        throw new AssertionError("did not receive expected value within " + timeout);
+        throw new AssertionError("did not receive a value within " + timeDesc(timeout, timeoutUnit));
       }
       return value;
     } catch (InterruptedException e) {
