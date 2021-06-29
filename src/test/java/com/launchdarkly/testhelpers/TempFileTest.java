@@ -19,11 +19,11 @@ public class TempFileTest {
       path = file.getPath();
       assertThat(Files.isRegularFile(path), is(true));
       
-      assertThat(Files.readString(path), equalTo(""));
+      assertThat(new String(Files.readAllBytes(path)), equalTo(""));
 
       file.setContents("xyz");
       
-      assertThat(Files.readString(path), equalTo("xyz"));
+      assertThat(new String(Files.readAllBytes(path)), equalTo("xyz"));
     }
     assertThat(Files.exists(path), is(false));
   }
@@ -43,7 +43,7 @@ public class TempFileTest {
   public void canDeleteTempFileBeforeClosing() throws Exception {
     Path path = null;
     try (TempFile file = TempFile.create()) {
-      path = file .getPath();
+      path = file.getPath();
       assertThat(Files.isRegularFile(path), is(true));
      
       file.delete();
