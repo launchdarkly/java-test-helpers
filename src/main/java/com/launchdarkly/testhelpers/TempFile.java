@@ -18,6 +18,7 @@ import java.nio.file.Path;
  * not need to catch or declare them.
  * 
  * @see TempDir
+ * @since 1.1.0
  */
 public final class TempFile implements AutoCloseable {
   private final Path path;

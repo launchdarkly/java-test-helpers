@@ -15,6 +15,8 @@ import static com.launchdarkly.testhelpers.InternalHelpers.timeUnit;
 
 /**
  * Helper methods and test assertions related to concurrent data structures.
+ * 
+ * @since 1.1.0
  */
 public abstract class ConcurrentHelpers {
   /**

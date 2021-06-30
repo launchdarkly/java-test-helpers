@@ -22,7 +22,38 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Test assertions and matchers related to JSON.
- * 
+ * <p>
+ * The {@code assert} methods here provide simple assertions for strings that are assumed
+ * to contain JSON.
+ * <p>
+ * The other methods are factories for type-safe Hamcrest matchers. These are much more
+ * flexible, as you can use standard Hamcrest combinators like {@code allOf} or {@code not}.
+ * These use {@link JsonTestValue} as their type parameter, to prevent confusion between
+ * test code that operates on JSON strings and test code that operates on other kinds of
+ * strings. {@link JsonTestValue} is easily convertible from strings or other types;
+ * see {@link JsonTestValue#jsonOf(String)} and {@link JsonTestValue#jsonFromValue(Object)}.
+ * <p>
+ * Examples:
+ * <pre><code>
+ *     // check for the exact JSON properties {"a": 1, "b": 2} in any order
+ *     assertThat(jsonOf(myString), jsonEquals("{\"a\":1, \"b\": 2}");
+ *     
+ *     // check that a JSON object's property "p" is equal to a specific boolean value
+ *     assertThat(jsonOf(myString), jsonProperty("p", someBooleanValue));
+ *     
+ *     // check that a JSON object's property "p" is either null or omitted
+ *     assertThat(jsonOf(myString),
+ *         jsonProperty("p", anyOf(jsonNull(), jsonUndefined())));
+ *     
+ *     // check that a JSON object's property "p" is an array containing a specific value
+ *     assertThat(jsonOf(myString),
+ *         jsonProperty("p", isJsonArray(hasItem(jsonEqualsValue(someValue)))));
+ * </code></pre>
+ * <p>
+ * When comparing unequal JSON objects or arrays, these methods will do their best to
+ * show you a localized difference such as a specific property, rather than only showing
+ * the entire actual and expected values. 
+ *    
  * @since 1.1.0
  */
 public abstract class JsonAssertions {

@@ -11,6 +11,7 @@ import com.google.gson.JsonElement;
  * which are not relevant to the test logic.
  * 
  * @see JsonAssertions
+ * @since 1.1.0
  */
 public final class JsonTestValue {
   private static final Gson gson = new Gson();

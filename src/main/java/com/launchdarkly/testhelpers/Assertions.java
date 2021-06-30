@@ -10,6 +10,8 @@ import static com.launchdarkly.testhelpers.InternalHelpers.timeUnit;
  * 
  * For more specific categories of assertions, see {@link ConcurrentHelpers},
  * {@link JsonAssertions}, and {@link TypeBehavior}.
+ * 
+ * @since 1.1.0
  */
 public abstract class Assertions {
   /**
