@@ -9,22 +9,17 @@ workflows:
       - build-linux
       - test-linux:
           name: Java 8 - Linux - OpenJDK
-          docker-image: cimg/openjdk:8
-          requires:
-            - build-linux
-      - test-linux:
-          name: Java 9 - Linux - OpenJDK
-          docker-image: cimg/openjdk:9
-          requires:
-            - build-linux
-      - test-linux:
-          name: Java 10 - Linux - OpenJDK
-          docker-image: cimg/openjdk:10
+          docker-image: cimg/openjdk:.0
           requires:
             - build-linux
       - test-linux:
           name: Java 11 - Linux - OpenJDK
-          docker-image: cimg/openjdk:11
+          docker-image: cimg/openjdk:11.0
+          requires:
+            - build-linux
+      - test-linux:
+          name: Java 16 - Linux - OpenJDK
+          docker-image: cimg/openjdk:16.0
           requires:
             - build-linux
       - build-test-windows:
@@ -33,7 +28,7 @@ workflows:
 jobs:
   build-linux:
     docker:
-      - image: cimg/openjdk:8
+      - image: cimg/openjdk:8.0
     steps:
       - checkout
       - run: java -version
