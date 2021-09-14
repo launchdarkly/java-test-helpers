@@ -1,3 +1,4 @@
+version: 2
 
 publications:
   - url: https://oss.sonatype.org/content/groups/public/com/launchdarkly/java-test-helpers/
@@ -5,8 +6,11 @@ publications:
   - url: https://javadoc.io/doc/com.launchdarkly/java-test-helpers
     description: documentation (javadoc.io)
 
-template:
-  name: gradle
+jobs:
+  - docker:
+      image: gradle:6.8.3-jdk11
+    template:
+      name: gradle
 
 documentation:
-  githubPages: true
+  gitHubPages: true
