@@ -72,9 +72,6 @@ public abstract class TypeBehavior {
       for (int j = 0; j < valueFactories.size(); j++) {
         T value1 = valueFactories.get(i).get();
         T value2 = valueFactories.get(j).get();
-        if (value1 == value2) {
-          throw new AssertionError("value factory must not return the same instance twice");
-        }
         if (i == j) {
           // instance is equal to itself
           if (!value1.equals(value1)) {
