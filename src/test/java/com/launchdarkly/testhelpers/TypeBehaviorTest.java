@@ -92,6 +92,28 @@ public class TypeBehaviorTest {
             ));
   }
   
+  @Test(expected=AssertionError.class)
+  public void checkEqualsAndHashCodeFailureForSameInstanceSeenTwice() {
+    TypeThatEqualsOnlyItself instance1 = new TypeThatEqualsOnlyItself();
+    TypeThatEqualsOnlyItself instance2 = new TypeThatEqualsOnlyItself();
+    checkEqualsAndHashCode(
+        Arrays.asList(
+            () -> instance1,
+            () -> instance2
+            ));
+  }
+
+  @Test
+  public void checkEqualsAndHashCodeAllowsSingletonPattern() {
+    TypeThatEqualsOnlyItself instance1 = new TypeThatEqualsOnlyItself();
+    TypeThatEqualsOnlyItself instance2 = new TypeThatEqualsOnlyItself();
+    checkEqualsAndHashCode(
+        Arrays.asList(
+            TypeBehavior.singletonValueFactory(instance1),
+            TypeBehavior.singletonValueFactory(instance2)
+            ));
+  }
+
   private static class TypeWithValueAndHashCode {
     private final String value;
     private final int hashCode;
