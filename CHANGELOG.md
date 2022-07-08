@@ -2,6 +2,10 @@
 
 All notable changes to the project will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [1.2.0] - 2022-07-08
+### Added:
+- `TypeBehavior.singletonValueFactory` is a new method that can be used with `TypeBehavior.checkEqualsAndHashCode` to allow testing of types that have interned/singleton values.
+
 ## [1.1.1] - 2022-06-17
 ### Fixed:
 - Fixed Hamcrest dependency to use `hamcrest-library` rather than `hamcrest-all`, because JUnit (which is commonly used in any unit test code that would also use Hamcrest) has a transitive dependency on `hamcrest-library` and using both would result in duplication on the classpath.
