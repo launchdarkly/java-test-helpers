@@ -47,12 +47,12 @@ java {
 object Versions {
     const val gson = "2.7"
     const val guava = "30.1-jre"
-    const val jetty = "9.4.39.v20210325"
+    const val ldNanoHttpd = "1.0.0-SNAPSHOT"
     const val okhttpTls = "4.8.1"
 }
 
 dependencies {
-    implementation("org.eclipse.jetty:jetty-server:${Versions.jetty}")
+    implementation("com.launchdarkly.labs:nanohttpd:${Versions.ldNanoHttpd}")
     implementation("com.google.code.gson:gson:${Versions.gson}")
     implementation("com.google.guava:guava:${Versions.guava}")
     implementation("com.squareup.okhttp3:okhttp-tls:${Versions.okhttpTls}")

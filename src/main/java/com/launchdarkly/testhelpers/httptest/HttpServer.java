@@ -1,6 +1,7 @@
 package com.launchdarkly.testhelpers.httptest;
 
-import com.launchdarkly.testhelpers.httptest.impl.JettyHttpServerDelegate;
+import com.launchdarkly.testhelpers.httptest.impl.HttpServerImpl;
+import com.launchdarkly.testhelpers.tcptest.TcpServer;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -11,8 +12,13 @@ import java.net.URL;
  * A simplified wrapper for an embedded test HTTP server.
  * <p>
  * See {@link com.launchdarkly.testhelpers.httptest} for more details and examples.
+ * <p>
+ * The server can be configured with any implementation of {@link Handler} to specify how
+ * HTTP requests should be handled. However, this is limited to behavior that is valid in
+ * HTTP. If you want to simulate a server that does not return a valid HTTP response, use
+ * {@link TcpServer} instead.
  */
-public final class HttpServer implements Closeable {
+public final class HttpServer implements Closeable {  
   private final Delegate delegate;
   private final int port;
   private final URI uri;
@@ -29,6 +35,24 @@ public final class HttpServer implements Closeable {
      * @throws IOException if starting the server fails
      */
     int start() throws IOException;
+    
+    /**
+     * Factory pattern for the server abstraction.
+     * 
+     * @since 2.0.0
+     * @see com.launchdarkly.testhelpers.httptest.impl.HttpServerImpl
+     */
+    public interface Factory {
+      /**
+       * Creates the platform-specific server implementation, but does not start it.
+       * 
+       * @param port the port it will listen on, or 0 to select any available port
+       * @param handler the request handler
+       * @param tlsConfig TLS configuration if using TLS, or null
+       * @return the delegate implementation
+       */
+      Delegate createServerDelegate(int port, Handler handler, ServerTLSConfiguration tlsConfig);
+    }
   }
   
   private HttpServer(Delegate delegate, int port, URI uri, RequestRecorder recorder) {
@@ -108,7 +132,7 @@ public final class HttpServer implements Closeable {
       }
     };
     
-    Delegate delegate = new JettyHttpServerDelegate(port, rootHandler, tlsConfig);
+    Delegate delegate = HttpServerImpl.factory().createServerDelegate(port, rootHandler, tlsConfig);
 
     int realPort;
     try {

@@ -102,7 +102,7 @@ public class StreamingTest {
         
         for (int i = 0; i < expectedChunks.size(); i++) {
           didWriteChunk[i].acquire();
-          
+ 
           byte[] buf = new byte[100];
           int n = stream.read(buf);
           String s = new String(buf, 0, n);
