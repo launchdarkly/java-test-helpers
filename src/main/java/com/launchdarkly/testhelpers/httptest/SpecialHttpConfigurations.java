@@ -121,7 +121,7 @@ public class SpecialHttpConfigurations {
      * @param params client configuration options
      * @return true if successful; false if your client implementation does not support some of
      *   those parameters and you are deliberately skipping this test
-     * @throws IOException
+     * @throws IOException if the connection failed
      * @throws UnexpectedResponseException if you were able to connect and send the request, but
      *   the content of the response was not consistent with the {@code handler} you passed to
      *   the test method
