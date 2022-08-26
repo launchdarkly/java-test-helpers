@@ -101,7 +101,10 @@ public class TcpServer implements Closeable {
   }
 
   /**
-   * Convenience method for constructing an HTTP URI with the listener port.
+   * Convenience method for constructing an HTTP URI with the listener port. This does not
+   * mean the listener necessarily can accept HTTP requests, but it may be useful if for
+   * instance you have configured it with {@link TcpHandlers#forwardToPort(int)} to forward
+   * requests to an {@link HttpServer}.
    * 
    * @return an HTTP URI using localhost and the value of {@link #getPort()}
    */
