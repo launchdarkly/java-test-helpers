@@ -58,7 +58,6 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp-tls:${Versions.okhttpTls}")
     implementation("org.hamcrest:hamcrest-library:1.3")
 
-    testImplementation("ch.qos.logback:logback-classic:1.1.9")
     testImplementation("com.squareup.okhttp3:okhttp:4.5.0")
     testImplementation("junit:junit:4.12")
 }
