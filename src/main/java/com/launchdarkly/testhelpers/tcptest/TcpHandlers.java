@@ -11,6 +11,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Factory methods for standard {@link TcpHandler} implementations.
+ * 
+ * @since 1.3.0
  */
 public abstract class TcpHandlers {
   private TcpHandlers() {}

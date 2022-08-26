@@ -6,7 +6,7 @@ import java.net.Socket;
 /**
  * Use with {@link TcpServer} to define behavior for a TCP endpoint in a test.
  * 
- * @since 2.0.0
+ * @since 1.3.0
  */
 public interface TcpHandler {
   /**

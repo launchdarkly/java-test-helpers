@@ -16,7 +16,7 @@ import java.util.Date;
  * any particular protocol that might be used over TCP. See {@link TcpHandlers} for examples
  * of configurable behavior.
  * 
- * @since 2.0.0
+ * @since 1.3.0
  */
 public class TcpServer implements Closeable {
   private final ServerSocket listener;
