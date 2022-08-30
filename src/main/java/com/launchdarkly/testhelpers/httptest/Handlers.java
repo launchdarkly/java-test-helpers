@@ -1,5 +1,7 @@
 package com.launchdarkly.testhelpers.httptest;
 
+import com.launchdarkly.testhelpers.tcptest.TcpServer;
+
 import org.eclipse.jetty.server.HttpConnection;
 import org.eclipse.jetty.util.Callback;
 
@@ -235,7 +237,12 @@ public abstract class Handlers {
    * of client logic that needs to handle exceptions differently from HTTP error statuses.
    *  
    * @return a {@link Handler}
+   * @deprecated This method is deprecated because the mechanism for forcing the HTTP server to
+   * close the connection early is fragile and relies on implementation details of the
+   * underlying server framework. A more reliable approach is to use a {@link TcpServer} instead
+   * of an {@link HttpServer}, and configure it to close the connection without a response.
    */
+  @Deprecated
   public static Handler malformedResponse() {
     return ctx -> {
       HttpConnection conn = HttpConnection.getCurrentConnection();

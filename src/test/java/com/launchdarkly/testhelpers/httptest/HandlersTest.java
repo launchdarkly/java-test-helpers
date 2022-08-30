@@ -170,6 +170,7 @@ public class HandlersTest {
     }
   }
   
+  @SuppressWarnings("deprecation")
   @Test(expected=IOException.class)
   public void malformedResponse() throws Exception {
     try (HttpServer server = HttpServer.start(Handlers.malformedResponse())) {
