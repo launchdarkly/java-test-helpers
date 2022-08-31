@@ -1,7 +1,8 @@
 version: 2.1
 
 orbs:
-   win: circleci/windows@2.4.0
+   win: circleci/windows@5.0.0
+   android: circleci/android@2.1.2
 
 workflows:
   test:
@@ -81,7 +82,7 @@ jobs:
       openjdk-version:
         type: string
     executor:
-      name: win/default
+      name: win/server-2019
       shell: powershell.exe
     steps:
       - checkout
@@ -89,7 +90,7 @@ jobs:
           at: build
       - run:
           name: uninstall previous openjdk
-          command: choco uninstall openjdk
+          command: choco uninstall -y openjdk
       - run:
           name: install OpenJDK
           command: choco install openjdk --version <<parameters.openjdk-version>>
