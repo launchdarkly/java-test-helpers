@@ -1,6 +1,5 @@
 package com.launchdarkly.testhelpers.httptest.impl;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.launchdarkly.testhelpers.httptest.Handler;
 import com.launchdarkly.testhelpers.httptest.HttpServer;
@@ -130,7 +129,7 @@ class NanoHttpdServerDelegate implements HttpServer.Delegate {
         }
       }
       
-      return new RequestInfo(session.getMethod().name(), requestUri, path,
+      return new RequestInfo(session.getMethod().toString(), requestUri, path,
           queryWithPrefix.isEmpty() ? null : queryWithPrefix,
           headers.build(), body);
     }

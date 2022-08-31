@@ -11,10 +11,11 @@
  * testing needs due to limitations in their design (for instance, they generally do not
  * support streaming responses).
  * <p>
- * This package uses Jetty as its underlying implementation. Only the basic Jetty embedded
- * server implementation is used, without the webapp framework. The package's API is
- * considerably more concise and convenient for test implementation than Jetty's API. It
- * is possible to build a simple web service with this package, but it should not be used
+ * This package uses a fork of nanohttpd as its underlying implementation. Only the core
+ * server implementation is used, without a webapp framework, so it is fairly lightweight
+ * and has dependencies other than Java 7 or above.
+ * <p>
+ * It is possible to build a simple web service with this package, but it should not be used
  * for production services.
  * <p>
  * An {@link com.launchdarkly.testhelpers.httptest.HttpServer} is an HTTP server that

@@ -10,7 +10,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
-import static org.junit.Assume.assumeTrue;
 
 import okhttp3.MediaType;
 import okhttp3.Request;
@@ -107,7 +106,6 @@ public class RequestRecorderTest {
 
   @Test
   public void reportRequestWithBody() throws Exception {
-    assumeTrue("this test is temporarily disabled until our nanohttpd fork supports the REPORT verb", false);
     doRequestWithBody("REPORT");
   }
 
