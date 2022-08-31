@@ -37,3 +37,7 @@ To build the project and run all unit tests:
 ```
 ./gradlew test
 ```
+
+## Note on Java version, Android support, and dependencies
+
+This project can be used both in server-side Java and in Android. Its minimum Java version is 8, but not all Java 8 APIs and syntax are supported in Android. The CI jobs for this project include an Android job that runs all of the unit tests in Android, to verify that no unsupported APIs are being used.
