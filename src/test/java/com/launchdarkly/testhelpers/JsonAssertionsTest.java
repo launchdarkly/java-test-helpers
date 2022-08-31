@@ -22,7 +22,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.emptyIterable;
 
 @SuppressWarnings("javadoc")
-public class JsonAssertionsTest {
+public class JsonAssertionsTest extends BaseTest {
   @Test
   public void assertJsonEqualsSuccess() {
     jsonEqualsShouldSucceed("null", "null");

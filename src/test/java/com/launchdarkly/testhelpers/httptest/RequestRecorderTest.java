@@ -1,5 +1,7 @@
 package com.launchdarkly.testhelpers.httptest;
 
+import com.launchdarkly.testhelpers.BaseTest;
+
 import org.junit.Test;
 
 import java.net.URI;
@@ -17,7 +19,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 @SuppressWarnings("javadoc")
-public class RequestRecorderTest {
+public class RequestRecorderTest extends BaseTest {
   // Note that these tests are really testing two things: the RequestRecorder API, and the
   // ability of the underlying server implementation to correctly get the request properties.
   

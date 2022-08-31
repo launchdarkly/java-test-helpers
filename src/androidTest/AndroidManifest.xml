@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.launchdarkly.testhelpers">
+
+    <application>
+        <activity
+            android:name=".TestActivity" />
+    </application>
+
+    <instrumentation
+        android:name="android.support.test.runner.AndroidJUnitRunner"
+        android:targetPackage="com.launchdarkly.testhelpers" />
+    <instrumentation
+        android:name="android.support.test.runner.AndroidJUnitRunner"
+        android:targetPackage="com.launchdarkly.testhelpers.httptest" />
+    <instrumentation
+        android:name="android.support.test.runner.AndroidJUnitRunner"
+        android:targetPackage="com.launchdarkly.testhelpers.tcptest" />
+
+</manifest>

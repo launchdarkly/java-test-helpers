@@ -1,5 +1,7 @@
 package com.launchdarkly.testhelpers.tcptest;
 
+import com.launchdarkly.testhelpers.BaseTest;
+
 import org.junit.Test;
 
 import java.io.IOException;
@@ -12,7 +14,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
 
 @SuppressWarnings("javadoc")
-public class TcpServerTest {
+public class TcpServerTest extends BaseTest {
   @Test
   public void listensOnAnyAvailablePort() throws IOException {
     int port;

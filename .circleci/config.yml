@@ -22,12 +22,19 @@ workflows:
           docker-image: cimg/openjdk:17.0
           requires:
             - build-linux
-      - build-test-windows:
+      - test-windows:
           name: Java 11 - Windows - OpenJDK
           openjdk-version: 11.0.2.01
-      - build-test-windows:
+          requires:
+            - build-linux
+      - test-windows:
           name: Java 17 - Windows - OpenJDK
           openjdk-version: 17.0.1
+          requires:
+            - build-linux
+      - test-android:
+          requires:
+            - build-linux
 
 jobs:
   build-linux:
@@ -55,7 +62,9 @@ jobs:
       - attach_workspace:
           at: build
       - run: java -version
-      - run: ./gradlew test
+      - run:
+          name: run tests
+          command: ./gradlew test
       - run:
           name: Save test results
           command: |
@@ -67,7 +76,7 @@ jobs:
       - store_artifacts:
           path: ~/junit
 
-  build-test-windows:
+  test-windows:
     parameters:
       openjdk-version:
         type: string
@@ -76,6 +85,8 @@ jobs:
       shell: powershell.exe
     steps:
       - checkout
+      - attach_workspace:
+          at: build
       - run:
           name: uninstall previous openjdk
           command: choco uninstall openjdk
@@ -84,7 +95,7 @@ jobs:
           command: choco install openjdk --version <<parameters.openjdk-version>>
       - run: java -version
       - run:
-          name: build and test
+          name: run tests
           command: |
             .\gradlew.bat --no-daemon test  # must use --no-daemon because CircleCI in Windows will hang if there's a daemon running
       - run:
@@ -96,3 +107,37 @@ jobs:
           path: .\junit
       - store_artifacts:
           path: .\junit
+
+  test-android:
+    executor:
+      name: android/android-machine
+      resource-class: large
+      tag: 2021.10.1
+
+    steps:
+      - checkout
+
+      # What we want to do here is somewhat unusual: we want Android to run all of our tests from
+      # src/test/java, but run them in the Android emulator (to prove that we're only using Java
+      # APIs that our minimum Android API version supports). Normally, only tests in
+      # src/androidTest/java would be run that way. Also, Android needs a different JUnit test
+      # runner annotation on all of the test classes. So we can't just run the test code as-is.
+      #
+      # This step copies all the code from src/test/java into src/androidTest/java, except for the
+      # base class BaseTest.java, which is already defined in src/androidTest/java to provide the
+      # necessary test runner annotation.
+      - run:
+          name: Copy tests
+          command: rsync -r ./src/test/java/ ./src/androidTest/java/ --exclude='BaseTest.java'
+
+      - android/start-emulator-and-run-tests:
+          system-image: system-images;android-21;default;x86
+          max-tries: 1
+          post-emulator-launch-assemble-command: ./gradlew -b build-android.gradle :assembleAndroidTest
+          test-command: ./gradlew -b build-android.gradle :connectedAndroidTest
+
+      - store_test_results:
+          path: ./build/outputs/androidTest-results
+
+      - store_test_results:
+          path: ./build/reports/androidTests/connected

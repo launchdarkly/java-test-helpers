@@ -11,7 +11,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
 @SuppressWarnings("javadoc")
-public class TempFileTest {
+public class TempFileTest extends BaseTest {
   @Test
   public void tempFile() throws Exception {
     Path path = null;

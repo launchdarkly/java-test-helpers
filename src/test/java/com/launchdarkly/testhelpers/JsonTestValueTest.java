@@ -14,7 +14,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
 @SuppressWarnings("javadoc")
-public class JsonTestValueTest {
+public class JsonTestValueTest extends BaseTest {
   @Test
   public void parseUndefined() {
     JsonTestValue v = JsonTestValue.jsonOf(null);

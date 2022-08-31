@@ -1,5 +1,7 @@
 package com.launchdarkly.testhelpers.tcptest;
 
+import com.launchdarkly.testhelpers.BaseTest;
+
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -13,7 +15,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 @SuppressWarnings("javadoc")
-public class TcpHandlersTest {
+public class TcpHandlersTest extends BaseTest {
   @Test
   public void writeData() throws IOException {
     byte[] expected = new byte[] { 100, 101, 102 };

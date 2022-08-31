@@ -11,7 +11,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
 
 @SuppressWarnings("javadoc")
-public class TempDirTest {
+public class TempDirTest extends BaseTest {
   @Test
   public void tempDir() {
     Path path = null;

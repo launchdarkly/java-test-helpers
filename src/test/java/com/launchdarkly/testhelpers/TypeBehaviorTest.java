@@ -8,7 +8,7 @@ import static com.launchdarkly.testhelpers.TypeBehavior.checkEqualsAndHashCode;
 import static com.launchdarkly.testhelpers.TypeBehavior.valueFactoryFromInstances;
 
 @SuppressWarnings("javadoc")
-public class TypeBehaviorTest {
+public class TypeBehaviorTest extends BaseTest {
   @Test
   public void checkEqualsAndHashCodeSuccess() {
     checkEqualsAndHashCode(

@@ -10,7 +10,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 
 @SuppressWarnings("javadoc")
-public class AssertionsTest {
+public class AssertionsTest extends BaseTest {
   @Test
   public void assertPolledFunctionReturnsValueSuccessOnFirstTry() {
     String value = Assertions.assertPolledFunctionReturnsValue(

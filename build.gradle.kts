@@ -13,15 +13,9 @@ buildscript {
     }
 }
 
-plugins {
-    java
-    "java-library"
-    checkstyle
-    signing
-    "maven-publish"
-    idea
-    id("de.marcphilipp.nexus-publish") version "0.4.0"
-    id("io.codearte.nexus-staging") version "0.21.2"
+plugins {  // see Dependencies.kt in buildSrc
+    Libs.javaBuiltInGradlePlugins.forEach { id(it) }
+    Libs.javaExtGradlePlugins.forEach { (n, v) -> id(n) version v }
 }
 
 repositories {
@@ -32,8 +26,8 @@ repositories {
 }
 
 base {
-    group = "com.launchdarkly"
-    archivesBaseName = "test-helpers"
+    // see buildSrc/src/main/kotlin/ProjectValues.kt
+    group = ProjectValues.groupId
     version = version
 }
 
@@ -44,22 +38,10 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
-object Versions {
-    const val gson = "2.7"
-    const val guava = "30.1-jre"
-    const val ldNanoHttpd = "1.0.0-SNAPSHOT"
-    const val okhttpTls = "4.8.1"
-}
-
+// see buildSrc/src/main/kotlin/Dependencies.kt for dependency versions
 dependencies {
-    implementation("com.launchdarkly.labs:nanohttpd:${Versions.ldNanoHttpd}")
-    implementation("com.google.code.gson:gson:${Versions.gson}")
-    implementation("com.google.guava:guava:${Versions.guava}")
-    implementation("com.squareup.okhttp3:okhttp-tls:${Versions.okhttpTls}")
-    implementation("org.hamcrest:hamcrest-library:1.3")
-
-    testImplementation("com.squareup.okhttp3:okhttp:4.5.0")
-    testImplementation("junit:junit:4.12")
+    Libs.implementation.forEach { api(it) }
+    Libs.javaTestImplementation.forEach { testImplementation(it) }
 }
 
 checkstyle {
@@ -95,7 +77,7 @@ idea {
 }
 
 nexusStaging {
-    packageGroup = "com.launchdarkly"
+    packageGroup = ProjectValues.groupId
     numberOfRetries = 40 // we've seen extremely long delays in closing repositories
 }
 
@@ -104,13 +86,13 @@ publishing {
         create<MavenPublication>("mavenJava") {
             from(components["java"])
 
-            groupId = "com.launchdarkly"
-            artifactId = "test-helpers"
+            groupId = ProjectValues.groupId
+            artifactId = ProjectValues.artifactId
 
             pom {
                 name.set("test-helpers")
-                description.set("LaunchDarkly Java test helpers")
-                url.set("https://github.com/launchdarkly/java-test-helpers")
+                description.set(ProjectValues.description)
+                url.set("https://github.com/${ProjectValues.githubRepo}")
                 licenses {
                     license {
                         name.set("The Apache License, Version 2.0")
@@ -119,14 +101,14 @@ publishing {
                 }
                 developers {
                     developer {
-                        name.set("LaunchDarkly SDK Team")
-                        email.set("sdks@launchdarkly.com")
+                        name.set(ProjectValues.pomDeveloperName)
+                        email.set(ProjectValues.pomDeveloperEmail)
                     }
                 }
                 scm {
-                    connection.set("scm:git:git://github.com/launchdarkly/java-test-helpers.git")
-                    developerConnection.set("scm:git:ssh:git@github.com:launchdarkly/java-test-helpers.git")
-                    url.set("https://github.com/launchdarkly/java-test-helpers")
+                    connection.set("scm:git:git://github.com/${ProjectValues.githubRepo}.git")
+                    developerConnection.set("scm:git:ssh:git@github.com:${ProjectValues.githubRepo}.git")
+                    url.set("https://github.com/${ProjectValues.githubRepo}")
                 }
             }
         }

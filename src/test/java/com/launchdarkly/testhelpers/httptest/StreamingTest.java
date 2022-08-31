@@ -2,6 +2,7 @@ package com.launchdarkly.testhelpers.httptest;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.launchdarkly.testhelpers.BaseTest;
 
 import org.junit.Test;
 
@@ -17,7 +18,7 @@ import static org.hamcrest.Matchers.equalTo;
 import okhttp3.Response;
 
 @SuppressWarnings("javadoc")
-public class StreamingTest {
+public class StreamingTest extends BaseTest {
   @Test
   public void basicChunkedResponseWithNoCharsetInHeader() throws Exception {
     List<String> chunks = ImmutableList.of("first.", "second.", "third");

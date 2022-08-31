@@ -18,7 +18,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 
 @SuppressWarnings("javadoc")
-public class ConcurrentHelpersTest {
+public class ConcurrentHelpersTest extends BaseTest {
   @Test
   public void awaitValueSuccess() {
     BlockingQueue<String> q = new LinkedBlockingQueue<>();

@@ -1,5 +1,7 @@
 package com.launchdarkly.testhelpers.httptest;
 
+import com.launchdarkly.testhelpers.BaseTest;
+
 import org.junit.Test;
 
 import static com.launchdarkly.testhelpers.httptest.TestUtil.simpleGet;
@@ -12,7 +14,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 @SuppressWarnings("javadoc")
-public class HttpServerTest {
+public class HttpServerTest extends BaseTest {
   @Test
   public void serverWithSimpleStatusHandler() throws Exception {
     try (HttpServer server = HttpServer.start(Handlers.status(419))) {
