@@ -1,0 +1,36 @@
+
+// These properties are in their own file to ensure that they're kept in sync between the
+// main Java build (build.gradle) and the Android CI build (build-android-ci.gradle).
+
+allprojects {
+    group = 'com.launchdarkly'
+    version = "${version}"
+    archivesBaseName = "test-helpers"
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+}
+
+ext {
+    basePackage = "com.launchdarkly.testhelpers"
+    baseName = "test-helpers"
+}
+
+ext.versions = [
+    "gson": "2.7",
+    "guava": "30.1-jre",
+    "ldNanoHttpd": "1.0.0-SNAPSHOT",
+    "okhttpTls": "4.8.1"
+]
+
+ext.libraries = [:]
+
+dependencies {
+    implementation "com.launchdarkly.labs:nanohttpd:${versions.ldNanoHttpd}"
+    implementation "com.google.code.gson:gson:${versions.gson}"
+    implementation "com.google.guava:guava:${versions.guava}"
+    implementation "com.squareup.okhttp3:okhttp-tls:${versions.okhttpTls}"
+    implementation "org.hamcrest:hamcrest-library:1.3"
+
+    testImplementation "com.squareup.okhttp3:okhttp:4.5.0"
+    testImplementation "junit:junit:4.12"
+}

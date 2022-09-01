@@ -1,0 +1,126 @@
+
+buildscript {
+    repositories {
+        mavenCentral()
+        mavenLocal()
+    }
+}
+
+plugins {
+    id "java"
+    id "java-library"
+    id "checkstyle"
+    id "signing"
+    id "maven-publish"
+    id "idea"
+    id "de.marcphilipp.nexus-publish" version "0.3.0"
+    id "io.codearte.nexus-staging" version "0.30.0"
+}
+
+repositories {
+    mavenLocal()
+    // Before LaunchDarkly release artifacts get synced to Maven Central they are here along with snapshots:
+    maven { url = uri("https://oss.sonatype.org/content/groups/public/") }
+    mavenCentral()
+}
+
+apply from: 'build-shared.gradle'
+
+configurations.all {
+    // check for updates every build for dependencies with: 'changing: true'
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+checkstyle {
+    configFile file("${project.rootDir}/checkstyle.xml")
+}
+
+javadoc {
+    // Force the Javadoc build to fail if there are any Javadoc warnings. See: https://discuss.gradle.org/t/javadoc-fail-on-warning/18141/3
+    // See JDK-8200363 (https://bugs.openjdk.java.net/browse/JDK-8200363)
+    // for information about the -Xwerror option.
+    options.addBooleanOption('Xwerror')
+}
+
+test {
+    testLogging {
+        events "passed", "skipped", "failed", "standardOut", "standardError"
+        showStandardStreams = true
+        exceptionFormat = 'full'
+    }
+}
+
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
+
+nexusStaging {
+    packageGroup = "com.launchdarkly"
+    numberOfRetries = 40 // we've seen extremely long delays in closing repositories
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            groupId = 'com.launchdarkly'
+            artifactId = 'test-helpers'
+
+            artifact sourcesJar
+            artifact javadocJar
+            
+            pom {
+                name = 'test-helpers'
+                description = 'LaunchDarkly Java Test Helpers'
+                url = 'https://github.com/launchdarkly/java-test-helpers'
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        name = 'LaunchDarkly SDK Team'
+                        email = 'sdks@launchdarkly.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/launchdarkly/java-test-helpers.git'
+                    developerConnection = 'scm:git:ssh:git@github.com:launchdarkly/java-test-helpers.git'
+                    url = 'https://github.com/launchdarkly/java-test-helpers'
+                }
+            }
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}
+
+nexusPublishing {
+    clientTimeout = java.time.Duration.ofMinutes(2) // we've seen extremely long delays in creating repositories
+    repositories {
+        sonatype {
+            username = ossrhUsername
+            password = ossrhPassword            
+        }
+    }
+}
+
+signing {
+    sign publishing.publications.mavenJava
+}
+
+tasks.withType(Sign) {
+    onlyIf { !"1".equals(project.findProperty("LD_SKIP_SIGNING")) } // so we can build jars for testing in CI
+}

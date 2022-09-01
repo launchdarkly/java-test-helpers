@@ -21,11 +21,7 @@ repositories {
     google()
 }
 
-allprojects {
-    group = ProjectValues.groupId
-    version = "${version}"  // from gradle.properties
-    archivesBaseName = ProjectValues.artifactId
-}
+apply from: 'build-shared.gradle'
 
 android {
     compileSdkVersion(30)
@@ -35,7 +31,7 @@ android {
         minSdkVersion(21)
         targetSdkVersion(30)
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
 
         consumerProguardFiles 'consumer-proguard-rules.pro'
 
@@ -50,24 +46,16 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    testOptions {
-        execution = "ANDROIDX_TEST_ORCHESTRATOR"
-    }
-
     packagingOptions {
         exclude 'META-INF/**'
     }
-
-    useLibrary("android.test.runner")
-    useLibrary("android.test.base")
-    useLibrary("android.test.mock")
 }
 
-// see buildSrc/src/main/kotlin/Dependencies.kt for dependency versions
+// see build-shared.gradle
 dependencies {
-    Libs.implementation.forEach { api(it)}
-    Libs.javaTestImplementation.forEach { testImplementation(it) }
-    Libs.androidTestImplementation.each { androidTestImplementation(it) }
+    androidTestImplementation "junit:junit:4.12"
+    androidTestImplementation "com.squareup.okhttp3:okhttp:4.5.0"
+    androidTestImplementation "com.android.support.test:runner:1.0.2"
 
     androidTestUtil("androidx.test:orchestrator:1.4.1")
 }
