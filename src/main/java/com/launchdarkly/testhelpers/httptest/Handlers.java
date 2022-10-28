@@ -1,7 +1,6 @@
 package com.launchdarkly.testhelpers.httptest;
 
 import java.nio.charset.Charset;
-import java.time.Duration;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -177,13 +176,13 @@ public abstract class Handlers {
   /**
    * Creates a {@link Handler} that sleeps for the specified amount of time.
    * 
-   * @param delay how long to delay
+   * @param delayMillis how long to delay, in milliseconds
    * @return a {@link Handler}
    */
-  public static Handler delay(Duration delay) {
+  public static Handler delay(long delayMillis) {
     return ctx -> {
       try {
-        Thread.sleep(delay.toMillis());
+        Thread.sleep(delayMillis);
       } catch (InterruptedException e) {}
     };
   }

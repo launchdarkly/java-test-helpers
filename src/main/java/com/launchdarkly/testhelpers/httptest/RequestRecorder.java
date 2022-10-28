@@ -1,6 +1,5 @@
 package com.launchdarkly.testhelpers.httptest;
 
-import java.time.Duration;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -18,7 +17,7 @@ public final class RequestRecorder implements Handler {
   /**
    * The default timeout for {@link #requireRequest()}: 5 seconds.
    */
-  public static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(5);
+  public static final int DEFAULT_TIMEOUT_MILLIS = 5000;
   
   private final BlockingQueue<RequestInfo> requests = new LinkedBlockingQueue<>();
   private final AtomicBoolean enabled = new AtomicBoolean(true);
@@ -59,25 +58,26 @@ public final class RequestRecorder implements Handler {
   
   /**
    * Consumes and returns the first request in the queue, blocking until one is available,
-   * using {@link #DEFAULT_TIMEOUT}.
+   * using {@link #DEFAULT_TIMEOUT_MILLIS}.
    * 
    * @return the request information
    * @throws IllegalStateException if the timeout expires
    */
   public RequestInfo requireRequest() {
-    return requireRequest(DEFAULT_TIMEOUT);
+    return requireRequest(DEFAULT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
   }
   
   /**
    * Consumes and returns the first request in the queue, blocking until one is available.
    * 
    * @param timeout the maximum length of time to wait
+   * @param timeoutUnit the time unit for the timeout
    * @return the request information
    * @throws RuntimeException if the timeout expires
    */
-  public RequestInfo requireRequest(Duration timeout) {
+  public RequestInfo requireRequest(long timeout, TimeUnit timeoutUnit) {
     try {
-      RequestInfo ret = requests.poll(timeout.toNanos(), TimeUnit.NANOSECONDS);
+      RequestInfo ret = requests.poll(timeout, timeoutUnit == null ? TimeUnit.MILLISECONDS : timeoutUnit);
       if (ret == null) {
         throw new IllegalStateException(new TimeoutException());
       }
@@ -92,11 +92,12 @@ public final class RequestRecorder implements Handler {
    * the specified timeout.
    * 
    * @param timeout the maximum length of time to wait
+   * @param timeoutUnit the time unit for the timeout
    * @throws IllegalStateException if a request was received
    */
-  public void requireNoRequests(Duration timeout) {
+  public void requireNoRequests(long timeout, TimeUnit timeoutUnit) {
     try {
-      RequestInfo ret = requests.poll(timeout.toNanos(), TimeUnit.NANOSECONDS);
+      RequestInfo ret = requests.poll(timeout, timeoutUnit == null ? TimeUnit.MILLISECONDS : timeoutUnit);
       if (ret != null) {
          throw new IllegalStateException("received an unexpected request");
       }
