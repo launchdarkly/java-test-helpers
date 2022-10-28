@@ -2,6 +2,11 @@
 
 All notable changes to the project will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [1.3.0] - 2022-08-29
+### Added:
+- `com.launchdarkly.testhelpers.tcptest`: this package is analogous to `httptest` but much simpler, providing a basic TCP listener that can be configured with behaviors like "close connections without sending a response" or "forward the connection to another port".
+- `com.launchdarkly.testhelpers.httptest.SpecialHttpConfigurations`: test helpers to validate several standard kinds of HTTP client configurations.
+
 ## [1.2.0] - 2022-07-08
 ### Added:
 - `TypeBehavior.singletonValueFactory` is a new method that can be used with `TypeBehavior.checkEqualsAndHashCode` to allow testing of types that have interned/singleton values.
