@@ -43,7 +43,7 @@ public final class SimpleRouter implements Handler {
           for (int i = 1; i <= m.groupCount(); i++) {
             params.add(m.group(i));
           }
-          context = context.withPathParams(params.build());
+          context = new RequestContextWithPathParams(context, params.build());
         }
         r.handler.apply(context);
         return;
@@ -103,5 +103,50 @@ public final class SimpleRouter implements Handler {
   public SimpleRouter addRegex(String method, Pattern regex, Handler handler) {
     routes.add(new Route(method, regex, handler));
     return this;
+  }
+  
+  private static final class RequestContextWithPathParams implements RequestContext {
+    private final RequestContext wrapped;
+    private final ImmutableList<String> pathParams;
+    
+    RequestContextWithPathParams(RequestContext wrapped, ImmutableList<String> pathParams) {
+      this.wrapped = wrapped;
+      this.pathParams = pathParams;
+    }
+
+    @Override
+    public RequestInfo getRequest() {
+      return wrapped.getRequest();
+    }
+
+    @Override
+    public void setStatus(int status) {
+      wrapped.setStatus(status);
+    }
+
+    @Override
+    public void setHeader(String name, String value) {
+      wrapped.setHeader(name, value);
+    }
+
+    @Override
+    public void addHeader(String name, String value) {
+      wrapped.addHeader(name, value); 
+    }
+
+    @Override
+    public void setChunked() {
+      wrapped.setChunked();
+    }
+
+    @Override
+    public void write(byte[] data) {
+      wrapped.write(data);
+    }
+
+    @Override
+    public String getPathParam(int i) {
+      return i < 0 || i >= pathParams.size() ? null : pathParams.get(i);
+    }
   }
 }

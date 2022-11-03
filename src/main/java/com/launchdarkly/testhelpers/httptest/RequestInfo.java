@@ -1,70 +1,43 @@
 package com.launchdarkly.testhelpers.httptest;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.io.CharStreams;
 
-import java.io.BufferedReader;
 import java.net.URI;
-import java.util.Collections;
-import java.util.Enumeration;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * Properties of a request received by {@link HttpServer}.
  * <p>
- * This is used instead of the raw {@link HttpServletRequest} because {@link HttpServer} may need
- * to record the request. Therefore the request body, if any, is read in full ahead of time and
- * stored instead of providing the request input stream. 
+ * We capture all of the request properties, including the request body, before passing the request
+ * to the configured handler, because tests often need to record and inspect the request.
  */
 public final class RequestInfo {
   private final String method;
   private final URI uri;
   private final String path;
   private final String query;
-  private final ImmutableMap<String, ImmutableList<String>> headers;
+  private final ImmutableMap<String, String> headers;
   private final String body;
   
   /**
-   * Constructs an instance from an {@link HttpServletRequest}.
+   * Constructs an instance, specifying all properties.
    * 
-   * @param request the original request
+   * @param method the HTTP method
+   * @param uri the URI
+   * @param path the request path
+   * @param query the query string
+   * @param headers the headers
+   * @param body the body, or null
    */
-  public RequestInfo(HttpServletRequest request) {
-    this.method = request.getMethod().toUpperCase();
-    this.path = request.getPathInfo();
-    this.query = request.getQueryString() == null ? null :
-      ("?" + request.getQueryString());
-
-    ImmutableMap.Builder<String, ImmutableList<String>> headers = ImmutableMap.builder();
-    Enumeration<String> headerNames = request.getHeaderNames();
-    while (headerNames.hasMoreElements()) {
-      String name = headerNames.nextElement();
-      headers.put(name.toLowerCase(),
-          ImmutableList.copyOf(Collections.list(request.getHeaders(name))));
-    }
-    this.headers = headers.build();
-    
-    StringBuffer url = request.getRequestURL();
-    if (this.query != null) {
-      url.append(this.query);
-    }
-    this.uri = URI.create(url.toString());
-    
-    try {
-      BufferedReader r = request.getReader();
-      if (r == null) {
-        this.body = null;
-      } else {
-        this.body = CharStreams.toString(r);
-        r.close();
-      }
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+  public RequestInfo(String method, URI uri, String path, String query,
+      ImmutableMap<String, String> headers, String body) {
+    this.method = method.toUpperCase();
+    this.uri = uri;
+    this.path = path;
+    this.query = query;
+    this.headers = headers == null ? ImmutableMap.of() : headers;
+    this.body = body;
   }
-
+  
   /**
    * Returns the HTTP method.
    * 
@@ -103,15 +76,12 @@ public final class RequestInfo {
   
   /**
    * Returns a request header by name.
-   * <p>
-   * If the header has multiple values, it returns the first value.
    * 
    * @param name a case-insensitive header name
    * @return the header value, or null if not found
    */
   public String getHeader(String name) {
-    ImmutableList<String> values = headers.get(name.toLowerCase());
-    return (values == null || values.isEmpty()) ? null : values.get(0); 
+    return headers.get(name.toLowerCase()); 
   }
 
   /**
@@ -121,17 +91,6 @@ public final class RequestInfo {
    */
   public Iterable<String> getHeaderNames() {
     return headers.keySet();
-  }
-  
-  /**
-   * Returns all values of a request header by name.
-   * 
-   * @param name a case-insensitive header name
-   * @return the header values, or an empty iterable if not found
-   */
-  public Iterable<String> getHeaderValues(String name) {
-    ImmutableList<String> values = headers.get(name.toLowerCase());
-    return values == null ? ImmutableList.of() : values; 
   }
   
   /**

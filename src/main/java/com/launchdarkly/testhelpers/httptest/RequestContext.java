@@ -65,13 +65,4 @@ public interface RequestContext {
    *   is out of range
    */
   String getPathParam(int i);
-  
-  /**
-   * Returns a copy of this context with path parameter information added.
-   *  
-   * @param pathParams a sequence of positional parameters
-   * @return a transformed context
-   * @see #getPathParam(int)
-   */
-  RequestContext withPathParams(Iterable<String> pathParams);
 }
