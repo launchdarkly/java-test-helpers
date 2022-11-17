@@ -13,7 +13,8 @@
  * <p>
  * This package uses a fork of nanohttpd as its underlying implementation. Only the core
  * server implementation is used, without a webapp framework, so it is fairly lightweight
- * and has dependencies other than Java 7 or above.
+ * and has dependencies other than Java 7 or above. However, this implementation has only
+ * been validated for server-side Java; it may not work correctly in Android.
  * <p>
  * It is possible to build a simple web service with this package, but it should not be used
  * for production services.
