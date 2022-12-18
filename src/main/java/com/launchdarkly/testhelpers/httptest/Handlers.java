@@ -1,14 +1,6 @@
 package com.launchdarkly.testhelpers.httptest;
 
-import com.launchdarkly.testhelpers.tcptest.TcpServer;
-
-import org.eclipse.jetty.server.HttpConnection;
-import org.eclipse.jetty.util.Callback;
-
-import java.net.ProtocolException;
-import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.time.Duration;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -184,13 +176,13 @@ public abstract class Handlers {
   /**
    * Creates a {@link Handler} that sleeps for the specified amount of time.
    * 
-   * @param delay how long to delay
+   * @param delayMillis how long to delay, in milliseconds
    * @return a {@link Handler}
    */
-  public static Handler delay(Duration delay) {
+  public static Handler delay(long delayMillis) {
     return ctx -> {
       try {
-        Thread.sleep(delay.toMillis());
+        Thread.sleep(delayMillis);
       } catch (InterruptedException e) {}
     };
   }
@@ -231,27 +223,6 @@ public abstract class Handlers {
     };
   }
 
-  /**
-   * Creates a {@link Handler} that causes the server to return an invalid HTTP response, which
-   * should be seen by the client as a {@link ProtocolException}. Use this to test the behavior
-   * of client logic that needs to handle exceptions differently from HTTP error statuses.
-   *  
-   * @return a {@link Handler}
-   * @deprecated This method is deprecated because the mechanism for forcing the HTTP server to
-   * close the connection early is fragile and relies on implementation details of the
-   * underlying server framework. A more reliable approach is to use a {@link TcpServer} instead
-   * of an {@link HttpServer}, and configure it to close the connection without a response.
-   */
-  @Deprecated
-  public static Handler malformedResponse() {
-    return ctx -> {
-      HttpConnection conn = HttpConnection.getCurrentConnection();
-      conn.getHttpChannel().getEndPoint().write(Callback.from(() -> {
-        conn.getHttpChannel().getEndPoint().close();
-      }), ByteBuffer.wrap(new byte[] { 10 }));
-    };
-  }
-  
   /**
    * Creates a stateful {@link Handler} that delegates to each of the specified handlers in sequence
    * as each request is received.

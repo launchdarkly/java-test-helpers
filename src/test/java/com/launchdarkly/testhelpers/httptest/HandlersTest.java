@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 
 import org.junit.Test;
 
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -12,6 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static com.launchdarkly.testhelpers.httptest.TestUtil.client;
 import static com.launchdarkly.testhelpers.httptest.TestUtil.simpleGet;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 
@@ -62,7 +62,13 @@ public class HandlersTest {
         ))) {
       try (Response resp = simpleGet(server.getUri())) {
         assertThat(resp.code(), equalTo(200));
-        assertThat(resp.headers("Header-Name"), equalTo(ImmutableList.of("old-value", "new-value")));
+        // Not all HTTP server implementations are able to write multiple header lines. The HTTP spec
+        // says that sending a comma-delimited list is exactly equivalent.
+        assertThat(resp.headers("Header-Name"),
+            anyOf(
+                equalTo(ImmutableList.of("old-value", "new-value")),
+                equalTo(ImmutableList.of("old-value,new-value"))
+                ));
       }
     }
   }
@@ -167,14 +173,6 @@ public class HandlersTest {
         assertThat(signaled.get(), equalTo(true));
         assertThat(resp.code(), equalTo(200));
       }
-    }
-  }
-  
-  @SuppressWarnings("deprecation")
-  @Test(expected=IOException.class)
-  public void malformedResponse() throws Exception {
-    try (HttpServer server = HttpServer.start(Handlers.malformedResponse())) {
-      client.newCall(new Request.Builder().url(server.getUrl()).build()).execute();
     }
   }
 }

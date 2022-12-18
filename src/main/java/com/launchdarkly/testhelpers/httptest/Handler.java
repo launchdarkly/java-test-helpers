@@ -1,7 +1,5 @@
 package com.launchdarkly.testhelpers.httptest;
 
-import javax.servlet.http.HttpServletResponse;
-
 /**
  * An object or lambda that handles HTTP requests for a {@link HttpServer}.
  * <p>
@@ -13,7 +11,7 @@ public interface Handler {
    * Processes the request.
    * 
    * @param context a {@link RequestContext} that provides both the request information
-   *   and the {@link HttpServletResponse}
+   *   and the ability to modify the response
    */
   public void apply(RequestContext context);
 }
