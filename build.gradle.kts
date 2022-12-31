@@ -63,6 +63,7 @@ dependencies {
 }
 
 checkstyle {
+    toolVersion = "9.3"
     configFile = file("${project.rootDir}/checkstyle.xml")
 }
 
