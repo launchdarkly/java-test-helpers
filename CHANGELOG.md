@@ -2,6 +2,22 @@
 
 All notable changes to the project will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.0.1] - 2022-12-18
+(This release replaces the broken 2.0.0 release, which was accidentally duplicated from 1.3.0.)
+
+This release improves compatibility of the library with Android code by removing usage of Java 8 APIs that are not supported in Android. It also revises the embedded HTTP mechanism to use a fork of `nanohttpd` rather than the heavier-weight Jetty.
+
+### Changed:
+- All methods that took a `java.time.Duration` now take `long, TimeUnit` instead.
+- The `HttpServer` class is now based on a fork of the lightweight `nanohttpd` (https://github.com/launchdarkly-labs/nanohttpd) library. This should work correctly in any server-side Java environment; it has not been validated in Android, but the previous Jetty implementation did not work in Android anyway.
+
+## [2.0.0] - 2022-11-17
+This release improves compatibility of the library with Android code by removing usage of Java 8 APIs that are not supported in Android. It also revises the embedded HTTP mechanism to use a fork of `nanohttpd` rather than the heavier-weight Jetty.
+
+### Changed:
+- All methods that took a `java.time.Duration` now take `long, TimeUnit` instead.
+- The `HttpServer` class is now based on a fork of the lightweight `nanohttpd` (https://github.com/launchdarkly-labs/nanohttpd) library. This should work correctly in any server-side Java environment; it has not been validated in Android, but the previous Jetty implementation did not work in Android anyway.
+
 ## [1.3.0] - 2022-08-29
 ### Added:
 - `com.launchdarkly.testhelpers.tcptest`: this package is analogous to `httptest` but much simpler, providing a basic TCP listener that can be configured with behaviors like "close connections without sending a response" or "forward the connection to another port".
