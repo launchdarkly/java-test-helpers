@@ -12,11 +12,11 @@
     <instrumentation
         android:name="android.support.test.runner.AndroidJUnitRunner"
         android:targetPackage="com.launchdarkly.testhelpers" />
-    <instrumentation
+    <!-- <instrumentation
         android:name="android.support.test.runner.AndroidJUnitRunner"
         android:targetPackage="com.launchdarkly.testhelpers.httptest" />
     <instrumentation
         android:name="android.support.test.runner.AndroidJUnitRunner"
-        android:targetPackage="com.launchdarkly.testhelpers.tcptest" />
+        android:targetPackage="com.launchdarkly.testhelpers.tcptest" /> -->
 
 </manifest>
