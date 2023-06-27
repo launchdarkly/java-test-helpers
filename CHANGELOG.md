@@ -2,6 +2,10 @@
 
 All notable changes to the project will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.0.2] - 2023-06-27
+### Changed:
+- Bumping Guava version to incorporate CVE fixes.
+
 ## [2.0.1] - 2022-12-18
 (This release replaces the broken 2.0.0 release, which was accidentally duplicated from 1.3.0.)
 
