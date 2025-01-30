@@ -1,6 +1,6 @@
 # LaunchDarkly Java Test Helpers
 
-[![Circle CI](https://circleci.com/gh/launchdarkly/java-test-helpers.svg?style=shield)](https://circleci.com/gh/launchdarkly/java-test-helpers)
+[![Quality control](https://github.com/launchdarkly/java-test-helpers/actions/workflows/ci.yml/badge.svg)](https://github.com/launchdarkly/java-test-helpers/actions/workflows/ci.yml)
 [![Javadocs](http://javadoc.io/badge/com.launchdarkly/java-test-helpers.svg)](http://javadoc.io/doc/com.launchdarkly/java-test-helpers)
 
 ## Overview
