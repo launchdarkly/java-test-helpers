@@ -123,7 +123,7 @@ public class Response implements Closeable {
     }
 
     /**
-     * Creates a fixed length response if totalBytes>=0, otherwise chunked.
+     * Creates a fixed length response if totalBytes&gt;=0, otherwise chunked.
      */
     @SuppressWarnings({
         "rawtypes",

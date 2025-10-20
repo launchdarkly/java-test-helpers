@@ -179,7 +179,7 @@ public abstract class NanoHTTPD {
     public static final Logger LOG = Logger.getLogger(NanoHTTPD.class.getName());
 
     /**
-     * Hashtable mapping (String)FILENAME_EXTENSION -> (String)MIME_TYPE
+     * Hashtable mapping (String)FILENAME_EXTENSION -&gt; (String)MIME_TYPE
      */
     protected static Map<String, String> MIME_TYPES;
 
