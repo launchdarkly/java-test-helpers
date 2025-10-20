@@ -9,14 +9,9 @@ This package has now been vendored as it was only used by this test-helpers proj
 
 ## Modifications
 
-### 1. Package Namespace Change
+### Package Namespace Change
 - Changed all package declarations from `org.nanohttpd.*` to `com.launchdarkly.testhelpers.httptest.nanohttpd.*`
 - Updated all import statements to reference the new package namespace
-
-### 2. Javadoc Fixes
-- Replaced self-closing `<p/>` tags with `<p>` tags throughout the codebase
-- Removed `<p>` tags from inside `<ul>` elements in class-level Javadoc comments (specifically in NanoHTTPD.java)
-- These changes were necessary to pass Javadoc validation enabled in this project
 
 ## Original Source
 - Repository: https://github.com/NanoHttpd/nanohttpd

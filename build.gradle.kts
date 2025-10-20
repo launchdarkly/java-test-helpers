@@ -65,6 +65,11 @@ checkstyle {
     configFile = file("${project.rootDir}/checkstyle.xml")
 }
 
+tasks.checkstyleMain.configure {
+    // Exclude embedded nanohttpd code from checkstyle
+    exclude("com/launchdarkly/testhelpers/httptest/nanohttpd/**")
+}
+
 tasks.jar.configure {
     manifest {
         attributes(mapOf("Implementation-Version" to project.version))
@@ -86,6 +91,9 @@ tasks.javadoc.configure {
     // See JDK-8200363 (https://bugs.openjdk.java.net/browse/JDK-8200363)
     // for information about the -Xwerror option.
     (options as CoreJavadocOptions).addStringOption("Xwerror")
+
+    // Exclude embedded nanohttpd code from Javadoc generation
+    exclude("com/launchdarkly/testhelpers/httptest/nanohttpd/**")
 }
 
 tasks.test.configure {
