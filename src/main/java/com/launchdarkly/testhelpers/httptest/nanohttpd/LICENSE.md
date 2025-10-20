@@ -1,3 +1,8 @@
+================================================================================
+NOTE: This license applies only to the source code in the
+com.launchdarkly.testhelpers.httptest.nanohttpd package and its subpackages.
+================================================================================
+
 Copyright (c) 2012-2013 by Paul S. Hawke, 2001,2005-2013 by Jarno Elonen, 2010 by Konstantinos Togias
 All rights reserved.
 

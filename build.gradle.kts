@@ -69,6 +69,16 @@ tasks.jar.configure {
     manifest {
         attributes(mapOf("Implementation-Version" to project.version))
     }
+    // Include NOTICE file in binary distribution
+    from(".") {
+        include("NOTICE")
+        into("META-INF")
+    }
+    // Include nanohttpd license in binary distribution per BSD 3-Clause requirements
+    from("src/main/java/com/launchdarkly/testhelpers/httptest/nanohttpd") {
+        include("LICENSE.md")
+        into("META-INF/licenses/nanohttpd")
+    }
 }
 
 tasks.javadoc.configure {
