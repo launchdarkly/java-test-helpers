@@ -7,11 +7,11 @@ import com.launchdarkly.testhelpers.httptest.RequestContext;
 import com.launchdarkly.testhelpers.httptest.RequestInfo;
 import com.launchdarkly.testhelpers.httptest.ServerTLSConfiguration;
 
-import org.nanohttpd.protocols.http.IHTTPSession;
-import org.nanohttpd.protocols.http.NanoHTTPD;
-import org.nanohttpd.protocols.http.response.IStatus;
-import org.nanohttpd.protocols.http.response.Response;
-import org.nanohttpd.protocols.http.response.Status;
+import com.launchdarkly.testhelpers.httptest.nanohttpd.protocols.http.IHTTPSession;
+import com.launchdarkly.testhelpers.httptest.nanohttpd.protocols.http.NanoHTTPD;
+import com.launchdarkly.testhelpers.httptest.nanohttpd.protocols.http.response.IStatus;
+import com.launchdarkly.testhelpers.httptest.nanohttpd.protocols.http.response.Response;
+import com.launchdarkly.testhelpers.httptest.nanohttpd.protocols.http.response.Status;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

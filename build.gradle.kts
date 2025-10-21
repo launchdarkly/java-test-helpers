@@ -47,12 +47,10 @@ java {
 object Versions {
     const val gson = "2.7"
     const val guava = "32.0.1-jre"
-    const val ldNanoHttpd = "1.0.0-SNAPSHOT"
     const val okhttpTls = "4.8.1"
 }
 
 dependencies {
-    implementation("com.launchdarkly.labs:nanohttpd:${Versions.ldNanoHttpd}")
     implementation("com.google.code.gson:gson:${Versions.gson}")
     implementation("com.google.guava:guava:${Versions.guava}")
     implementation("com.squareup.okhttp3:okhttp-tls:${Versions.okhttpTls}")
@@ -67,9 +65,24 @@ checkstyle {
     configFile = file("${project.rootDir}/checkstyle.xml")
 }
 
+tasks.checkstyleMain.configure {
+    // Exclude embedded nanohttpd code from checkstyle
+    exclude("com/launchdarkly/testhelpers/httptest/nanohttpd/**")
+}
+
 tasks.jar.configure {
     manifest {
         attributes(mapOf("Implementation-Version" to project.version))
+    }
+    // Include NOTICE file in binary distribution
+    from(".") {
+        include("NOTICE")
+        into("META-INF")
+    }
+    // Include nanohttpd license in binary distribution per BSD 3-Clause requirements
+    from("src/main/java/com/launchdarkly/testhelpers/httptest/nanohttpd") {
+        include("LICENSE.md")
+        into("META-INF/licenses/nanohttpd")
     }
 }
 
@@ -78,6 +91,9 @@ tasks.javadoc.configure {
     // See JDK-8200363 (https://bugs.openjdk.java.net/browse/JDK-8200363)
     // for information about the -Xwerror option.
     (options as CoreJavadocOptions).addStringOption("Xwerror")
+
+    // Exclude embedded nanohttpd code from Javadoc generation
+    exclude("com/launchdarkly/testhelpers/httptest/nanohttpd/**")
 }
 
 tasks.test.configure {
