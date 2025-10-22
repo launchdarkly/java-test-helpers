@@ -1,6 +1,5 @@
 > [!WARNING]
 > Development of this project has moved to https://github.com/launchdarkly/java-core.
-> For any future issues please file them in that repository.
 
 # LaunchDarkly Java Test Helpers
 
