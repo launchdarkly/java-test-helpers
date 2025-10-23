@@ -1,3 +1,6 @@
+> [!WARNING]
+> Development of this project has moved to https://github.com/launchdarkly/java-core.
+
 # LaunchDarkly Java Test Helpers
 
 [![Quality control](https://github.com/launchdarkly/java-test-helpers/actions/workflows/ci.yml/badge.svg)](https://github.com/launchdarkly/java-test-helpers/actions/workflows/ci.yml)
